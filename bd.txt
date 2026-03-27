@@ -1,0 +1,72 @@
+-- Création de la base
+CREATE DATABASE livpro;
+USE livpro;
+
+-- =========================
+-- TABLE LIVREUR
+-- =========================
+CREATE TABLE livreur (
+    id_livreur INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL,
+    age INT,
+    sex ENUM('M', 'F') NOT NULL,
+    numero VARCHAR(20) UNIQUE NOT NULL,
+    mail VARCHAR(100),
+    adresse TEXT,
+    numero_cni VARCHAR(50) UNIQUE,
+    carte_grise VARCHAR(255)
+);
+
+-- =========================
+-- TABLE UTILISATEUR
+-- =========================
+CREATE TABLE utilisateur (
+    id_user INT AUTO_INCREMENT PRIMARY KEY,
+    numero VARCHAR(20) UNIQUE NOT NULL
+);
+
+-- =========================
+-- TABLE LIVRAISON
+-- =========================
+CREATE TABLE livraison (
+    id_livraison INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_livreur INT,
+    adresse_ramassage TEXT NOT NULL,
+    adresse_depot TEXT NOT NULL,
+    distance DECIMAL(10,2),
+    prix DECIMAL(10,2),
+    poids DECIMAL(10,2),
+    statut ENUM('en_attente', 'acceptee', 'en_cours', 'terminee', 'annulee') DEFAULT 'en_attente',
+    type_vehicule ENUM('moto', 'tricycle', 'camionnette', 'camion'),
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    date_validation DATETIME,
+
+    FOREIGN KEY (id_user) REFERENCES utilisateur(id_user) ON DELETE CASCADE,
+    FOREIGN KEY (id_livreur) REFERENCES livreur(id_livreur) ON DELETE SET NULL
+);
+
+-- =========================
+-- TABLE NOTE
+-- =========================
+CREATE TABLE note (
+    id_note INT AUTO_INCREMENT PRIMARY KEY,
+    id_livreur INT NOT NULL,
+    note INT CHECK (note BETWEEN 1 AND 5),
+    impression TEXT,
+
+    FOREIGN KEY (id_livreur) REFERENCES livreur(id_livreur) ON DELETE CASCADE
+);
+
+-- =========================
+-- TABLE COMMISSION
+-- =========================
+CREATE TABLE commission (
+    id_commission INT AUTO_INCREMENT PRIMARY KEY,
+    id_livraison INT NOT NULL,
+    montant DECIMAL(10,2) NOT NULL,
+    date_validation DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_livraison) REFERENCES livraison(id_livraison) ON DELETE CASCADE
+);
