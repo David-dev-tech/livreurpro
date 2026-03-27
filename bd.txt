@@ -69,4 +69,4 @@ CREATE TABLE commission (
     date_validation DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (id_livraison) REFERENCES livraison(id_livraison) ON DELETE CASCADE
-);
+); 
