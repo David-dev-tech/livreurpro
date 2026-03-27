@@ -25,7 +25,9 @@
             width: 100%;
             overflow: hidden;
         }
-
+        a{
+            text-decoration: none;
+        }
         body {
             font-family: 'DM Sans', sans-serif;
             background: #ffffff;
@@ -210,8 +212,26 @@
         /* RESPONSIVE */
         @media (max-width: 960px) {
             html, body {
+                
                 overflow-y: auto;
                 height: auto;
+            }
+            .hero::before{
+            background: linear-gradient(to right, 
+                #ffffff57 84.5%, 
+                #e67e22 15.5% );
+            } 
+            .btn-start{
+                background-color: white;
+                color: #e67e22;
+                margin-left: 10vw;
+            }
+            .dot{
+                margin-left: 10vw;
+            }
+            .text-group{
+                margin-left: 10vw;
+                margin-bottom: 25vw;
             }
 
             .hero {
@@ -219,9 +239,9 @@
                 padding: 4rem 1rem;
             }
 
-            .hero::before {
+            /* .hero::before {
                 background: linear-gradient(to bottom, #ffffff 49%, #e67e22 51%);
-            }
+            } */
 
             .hero::after {
                 display: none;
@@ -244,7 +264,7 @@
             }
 
             .p1::before { display: none; }
-            .p1, .p2, .p3 { text-align: center; padding-left: 0; }
+            .p1, .p2, .p3 { text-align: center; padding-left: 0;color: black; }
 
             .btn-start {
                 padding: 1rem 2.4rem;
@@ -280,9 +300,9 @@
                     <p class="p3">Suivi temps réel, paiement à la livraison, livreurs vérifiés. La logistique qui simplifie votre quotidien.</p>
                 </div>
 
-                <button class="btn-start" onclick="alert('🚀 Bienvenue sur LivreurPro – la plateforme arrive bientôt !')">
+                <a href="form_inscription.php" class="btn-start">
                     COMMENCER →
-                </button>
+                </a>
             </div>
 
             <!-- DROITE : Image -->
