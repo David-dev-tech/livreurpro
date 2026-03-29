@@ -26,16 +26,24 @@ CREATE TABLE livreur (
 );
 
 -- =========================
--- TABLE UTILISATEUR (avec date_creation)
+-- TABLE UTILISATEUR (avec date_creation et nom_utilisateur)
 -- =========================
 CREATE TABLE utilisateur (
     id_user VARCHAR(20) NOT NULL PRIMARY KEY,
     numero VARCHAR(20) UNIQUE NOT NULL,
+    nom_utilisateur VARCHAR(100) NULL,
     date_creation DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =========================
--- TABLE LIVRAISON (mise à jour pour compatibilité avec id_user VARCHAR)
+-- VUE : Utilisateurs classés du plus récent au plus ancien
+-- =========================
+CREATE VIEW utilisateur_classe AS
+SELECT * FROM utilisateur
+ORDER BY date_creation DESC;
+
+-- =========================
+-- TABLE LIVRAISON
 -- =========================
 CREATE TABLE livraison (
     id_livraison INT AUTO_INCREMENT PRIMARY KEY,
@@ -55,7 +63,7 @@ CREATE TABLE livraison (
 );
 
 -- =========================
--- TABLE NOTE (inchangée)
+-- TABLE NOTE
 -- =========================
 CREATE TABLE note (
     id_note INT AUTO_INCREMENT PRIMARY KEY,
@@ -66,7 +74,7 @@ CREATE TABLE note (
 );
 
 -- =========================
--- TABLE COMMISSION (inchangée)
+-- TABLE COMMISSION
 -- =========================
 CREATE TABLE commission (
     id_commission INT AUTO_INCREMENT PRIMARY KEY,
@@ -75,11 +83,3 @@ CREATE TABLE commission (
     date_validation DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_livraison) REFERENCES livraison(id_livraison) ON DELETE CASCADE
 );
-
--- =============================================
--- CLASSEMENT PAR DÉFAUT : les plus récents d'abord
--- =============================================
--- Cette vue permet d'afficher automatiquement les utilisateurs triés par date_creation (du plus récent au plus ancien)
-CREATE VIEW v_utilisateurs_chrono AS
-SELECT * FROM utilisateur
-ORDER BY date_creation DESC;
