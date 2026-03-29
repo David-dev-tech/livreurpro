@@ -413,9 +413,9 @@
             <div class="nav-container">
                 <div class="logo">LIVREUR<span>PRO</span></div>
                 <div class="nav-links">
-                    <a href="index.php">Accueil</a>
-                    <a href="catalogue.php" style="color: var(--orange);">Catalogue</a>
-                    <a href="mes_livraisons.php">Mes livraisons</a>
+                    <a href="../index.html">Accueil</a>
+                    <a href="../views/catalogue.php" style="color: var(--orange);">Catalogue</a>
+                    <a href="#">Mes livraisons</a>
                     <a href="#">Contact</a>
                     <div class="user-info">
                         <i class="fas fa-user-circle"></i>

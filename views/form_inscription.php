@@ -20,8 +20,8 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            
-            background: linear-gradient(rgba(255, 255, 255, 0.49), rgba(255, 255, 255, 0.5)), url('img/img (2).jpg');
+
+            background: linear-gradient(rgba(255, 255, 255, 0.49), rgba(255, 255, 255, 0.5)), url('../img/img (2).jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -137,7 +137,7 @@
     <div class="container">
         <h1>Entrez votre numéro</h1>
         
-        <form action="traitement_inscription.php" method="POST">
+        <form action="../models/traitement_inscription.php" method="POST">
             <div class="form-group">
                 <label for="numero">Numéro :</label>
                 <input 

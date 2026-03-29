@@ -1,0 +1,77 @@
+-- =============================================
+-- SUPPRESSION DE L'ANCIENNE BASE (ATTENTION : toutes les données seront perdues !)
+-- =============================================
+DROP DATABASE IF EXISTS livpro;
+
+-- =============================================
+-- CRÉATION DE LA NOUVELLE BASE
+-- =============================================
+CREATE DATABASE livpro;
+USE livpro;
+
+-- =========================
+-- TABLE LIVREUR (inchangée)
+-- =========================
+CREATE TABLE livreur (
+    id_livreur INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL,
+    age INT,
+    sex ENUM('M', 'F') NOT NULL,
+    numero VARCHAR(20) UNIQUE NOT NULL,
+    mail VARCHAR(100),
+    adresse TEXT,
+    numero_cni VARCHAR(50) UNIQUE,
+    carte_grise VARCHAR(255)
+);
+
+-- =========================
+-- TABLE UTILISATEUR (modifiée selon tes souhaits)
+-- =========================
+CREATE TABLE utilisateur (
+    id_user VARCHAR(20) NOT NULL PRIMARY KEY,   -- Plus d'AUTO_INCREMENT + VARCHAR
+    numero VARCHAR(20) UNIQUE NOT NULL,
+    nom_user VARCHAR(100) NOT NULL              -- Nouveau champ ajouté
+);
+
+-- =========================
+-- TABLE LIVRAISON (mise à jour pour compatibilité avec id_user VARCHAR)
+-- =========================
+CREATE TABLE livraison (
+    id_livraison INT AUTO_INCREMENT PRIMARY KEY,
+    id_user VARCHAR(20) NOT NULL,               -- Changé en VARCHAR pour matcher
+    id_livreur INT,
+    adresse_ramassage TEXT NOT NULL,
+    adresse_depot TEXT NOT NULL,
+    distance DECIMAL(10,2),
+    prix DECIMAL(10,2),
+    poids DECIMAL(10,2),
+    statut ENUM('en_attente', 'acceptee', 'en_cours', 'terminee', 'annulee') DEFAULT 'en_attente',
+    type_vehicule ENUM('moto', 'tricycle', 'camionnette', 'camion'),
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    date_validation DATETIME,
+    FOREIGN KEY (id_user) REFERENCES utilisateur(id_user) ON DELETE CASCADE,
+    FOREIGN KEY (id_livreur) REFERENCES livreur(id_livreur) ON DELETE SET NULL
+);
+
+-- =========================
+-- TABLE NOTE (inchangée)
+-- =========================
+CREATE TABLE note (
+    id_note INT AUTO_INCREMENT PRIMARY KEY,
+    id_livreur INT NOT NULL,
+    note INT CHECK (note BETWEEN 1 AND 5),
+    impression TEXT,
+    FOREIGN KEY (id_livreur) REFERENCES livreur(id_livreur) ON DELETE CASCADE
+);
+
+-- =========================
+-- TABLE COMMISSION (inchangée)
+-- =========================
+CREATE TABLE commission (
+    id_commission INT AUTO_INCREMENT PRIMARY KEY,
+    id_livraison INT NOT NULL,
+    montant DECIMAL(10,2) NOT NULL,
+    date_validation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_livraison) REFERENCES livraison(id_livraison) ON DELETE CASCADE
+);

@@ -1,0 +1,103 @@
+========================================
+PROJET LIVREURPRO - DOCUMENTATION
+========================================
+
+PRÉSENTATION DU PROJET
+----------------------
+LivreurPro est une plateforme de mise en relation entre des clients et des livreurs pour des services de livraison. Le système permet aux utilisateurs de soumettre des demandes de livraison et aux livreurs de les accepter et de les exécuter.
+
+FONCTIONNALITÉS PRINCIPALES
+---------------------------
+- Inscription des utilisateurs via numéro de téléphone
+- Gestion des livreurs (profil, véhicule, documents)
+- Création et suivi des livraisons
+- Système de notation des livreurs
+- Gestion des commissions
+
+BASE DE DONNÉES (livpro)
+------------------------
+5 tables principales :
+1. utilisateur : clients qui demandent des livraisons
+2. livreur : livreurs disponibles
+3. livraison : demandes de livraison
+4. note : évaluations des livreurs
+5. commission : frais de commission sur les livraisons
+
+
+========================================
+DESCRIPTION DES FICHIERS
+========================================
+
+1. config.php
+-------------
+Rôle : Configuration de la connexion à la base de données
+- Définit les paramètres de connexion (hôte, base, utilisateur, mot de passe)
+- Crée une instance PDO pour les requêtes SQL
+- Gère les erreurs de connexion
+- Utilisé par tous les fichiers nécessitant un accès à la BDD
+
+2. form_inscription.php
+-----------------------
+Rôle : Formulaire d'inscription des utilisateurs
+- Affiche une interface stylisée avec fond personnalisé
+- Demande le numéro de téléphone de l'utilisateur
+- Envoie les données à traitement.php via POST
+- Design responsive avec effets visuels modernes
+
+3. traitement.php
+-----------------
+Rôle : Traitement des données du formulaire d'inscription
+- Récupère le numéro soumis via POST
+- Génère un identifiant unique (id + 4 caractères aléatoires)
+- Vérifie que le numéro n'existe pas déjà
+- Insère les données dans la table "utilisateur"
+- Redirige avec message de succès ou d'erreur
+
+4. index.html
+-------------
+Rôle : Page d'accueil du site
+- Point d'entrée principal de l'application
+- Présente le service aux visiteurs
+- Redirige vers les fonctionnalités principales
+
+5. bd.txt
+---------
+Rôle : Script de création de la base de données
+- Contient toutes les commandes SQL pour créer la base et les tables
+- Définit la structure complète du schéma de données
+- Sert de référence pour la configuration de la BDD
+
+6. dossier img/
+---------------
+Rôle : Stockage des images du projet
+- img (2).jpg : Image de fond pour le formulaire
+- img1.png : Autre ressource graphique
+
+
+========================================
+FLUX DE FONCTIONNEMENT ACTUEL
+========================================
+
+Inscription Utilisateur :
+1. L'utilisateur accède à form_inscription.php
+2. Il saisit son numéro de téléphone
+3. traitement.php reçoit le numéro
+4. Un ID unique est généré (ex: id7aB9)
+5. Le numéro est enregistré dans la table "utilisateur"
+6. L'utilisateur est redirigé avec confirmation
+
+
+========================================
+ÉVOLUTIONS PRÉVUES
+========================================
+
+À développer :
+- Formulaire d'inscription des livreurs
+- Système de connexion/authentification
+- Interface de demande de livraison
+- Tableau de bord livreur
+- Système de géolocalisation
+- Paiement en ligne
+- Notifications
+
+========================================
