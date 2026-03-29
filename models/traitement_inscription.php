@@ -36,7 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         // Préparation de la requête SQL pour éviter les injections SQL
-        $stmt = $pdo->prepare("INSERT INTO utilisateur (id_user, numero) VALUES (?, ?)");
+        // La date de création est ajoutée automatiquement par MySQL (NOW())
+        $stmt = $pdo->prepare("INSERT INTO utilisateur (id_user, numero, date_creation) VALUES (?, ?, NOW())");
 
         // Exécution de la requête avec les valeurs
         $stmt->execute([$id_user, $numero]);
