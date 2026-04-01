@@ -4,23 +4,59 @@ PROJET LIVREURPRO - DOCUMENTATION
 
 PRÉSENTATION DU PROJET
 ----------------------
-LivreurPro est une plateforme de mise en relation entre des clients et des livreurs pour des services de livraison. Le système permet aux utilisateurs de soumettre des demandes de livraison et aux livreurs de les accepter et de les exécuter.
+LivreurPro est une plateforme de mise en relation entre des clients et des livreurs pour des services de livraison au Cameroun. Le système permet aux utilisateurs de soumettre des demandes de livraison et aux livreurs de les accepter et de les exécuter.
+
+Zone de couverture : Douala, Yaoundé, Garoua
 
 FONCTIONNALITÉS PRINCIPALES
 ---------------------------
 - Inscription des utilisateurs via numéro de téléphone
+- Catalogue des livreurs avec filtrage (type de véhicule, poids, note)
 - Gestion des livreurs (profil, véhicule, documents)
 - Création et suivi des livraisons
 - Système de notation des livreurs
-- Gestion des commissions
+- Interface responsive et moderne
 
+
+========================================
+ARCHITECTURE DU PROJET (MVC)
+========================================
+
+Le projet suit une architecture MVC simplifiée :
+
+- config/     : Fichiers de configuration (BDD, constantes)
+- controllers/: Contrôleurs (logique métier)
+- models/     : Modèles (traitement des données)
+- views/      : Vues (interfaces utilisateur)
+- guide/      : Documentation et ressources
+- img/        : Assets graphiques
+
+
+========================================
 BASE DE DONNÉES (livpro)
-------------------------
-5 tables principales :
+========================================
+
+Tables principales :
 1. utilisateur : clients qui demandent des livraisons
+   - id_user (clé primaire)
+   - numero (téléphone)
+   - date_creation
+
 2. livreur : livreurs disponibles
+   - Informations personnelles
+   - Type de véhicule (moto, tricycle, camionnette, camion)
+   - Capacité de poids max
+   - Documents
+
 3. livraison : demandes de livraison
+   - Détails de la livraison
+   - Statut
+   - Livreurs associés
+
 4. note : évaluations des livreurs
+   - Note (1-5 étoiles)
+   - Commentaires
+
 5. commission : frais de commission sur les livraisons
 
 
@@ -28,63 +64,125 @@ BASE DE DONNÉES (livpro)
 DESCRIPTION DES FICHIERS
 ========================================
 
-1. config.php
--------------
+1. config/config.php
+--------------------
 Rôle : Configuration de la connexion à la base de données
-- Définit les paramètres de connexion (hôte, base, utilisateur, mot de passe)
+- Définit les paramètres de connexion (hôte: localhost, base: livpro, user: root, mdp: vide)
 - Crée une instance PDO pour les requêtes SQL
-- Gère les erreurs de connexion
+- Gère les erreurs de connexion avec try/catch
+- Utilise UTF8MB4 pour le support des caractères
 - Utilisé par tous les fichiers nécessitant un accès à la BDD
 
-2. form_inscription.php
------------------------
+2. views/form_inscription.php
+-----------------------------
 Rôle : Formulaire d'inscription des utilisateurs
-- Affiche une interface stylisée avec fond personnalisé
+- Interface moderne avec effet glassmorphism (backdrop-filter)
 - Demande le numéro de téléphone de l'utilisateur
-- Envoie les données à traitement.php via POST
+- Envoie les données à traitement_inscription.php via POST
 - Design responsive avec effets visuels modernes
+- Background : image img/img (2).jpg avec overlay blanc semi-transparent
+- Couleurs : Orange (#e67e22) comme couleur principale
 
-3. traitement.php
------------------
+3. models/traitement_inscription.php
+------------------------------------
 Rôle : Traitement des données du formulaire d'inscription
 - Récupère le numéro soumis via POST
-- Génère un identifiant unique (id + 4 caractères aléatoires)
-- Vérifie que le numéro n'existe pas déjà
-- Insère les données dans la table "utilisateur"
-- Redirige avec message de succès ou d'erreur
+- Génère un identifiant unique (id + 4 caractères aléatoires alphanumériques)
+- Vérifie que le champ n'est pas vide
+- Insère les données dans la table "utilisateur" avec NOW() pour la date
+- Redirige vers catalogue.php en cas de succès
+- Gère les erreurs PDO avec logging et redirection vers le formulaire
 
 4. index.html
 -------------
-Rôle : Page d'accueil du site
+Rôle : Page d'accueil du site (landing page)
 - Point d'entrée principal de l'application
-- Présente le service aux visiteurs
-- Redirige vers les fonctionnalités principales
+- Présentation du service avec branding LivreurPro
+- Hero section avec texte à gauche et image à droite
+- Design bicolore : blanc (74.5%) / orange (25.5%)
+- Bouton "COMMENCER" redirigeant vers views/form_inscription.php
+- Responsive : s'adapte aux mobiles avec réorganisation verticale
+- Polices : Syne (titres) et DM Sans (texte) via Google Fonts
 
-5. bd.txt
----------
+5. views/catalogue.php
+----------------------
+Rôle : Catalogue des livreurs disponibles
+- Affiche la liste des livreurs avec leurs informations
+- Système de filtres :
+  * Type de véhicule (moto, tricycle, camionnette, camion)
+  * Poids maximum (kg)
+  * Note minimale (étoiles)
+- Header sticky avec navigation et info utilisateur
+- Cartes livreurs avec :
+  * Nom et prénom
+  * Type de véhicule avec icône
+  * Capacité de poids
+  * Note et nombre d'avis
+  * Numéro de téléphone
+  * Bouton "Sélectionner ce livreur"
+- Données simulées en JavaScript (9 livreurs exemples)
+- Redirection vers creer_livraison.php après sélection
+- Fonction de déconnexion avec confirmation
+
+6. guide/bd.txt
+---------------
 Rôle : Script de création de la base de données
 - Contient toutes les commandes SQL pour créer la base et les tables
 - Définit la structure complète du schéma de données
 - Sert de référence pour la configuration de la BDD
 
-6. dossier img/
+7. guide/documentation.txt
+--------------------------
+Rôle : Ce fichier - documentation complète du projet
+
+8. dossier img/
 ---------------
 Rôle : Stockage des images du projet
-- img (2).jpg : Image de fond pour le formulaire
-- img1.png : Autre ressource graphique
+- img (2).jpg : Image de fond pour le formulaire d'inscription
+- img1.png : Image illustration pour la page d'accueil (livreur)
 
 
 ========================================
 FLUX DE FONCTIONNEMENT ACTUEL
 ========================================
 
-Inscription Utilisateur :
-1. L'utilisateur accède à form_inscription.php
-2. Il saisit son numéro de téléphone
-3. traitement.php reçoit le numéro
-4. Un ID unique est généré (ex: id7aB9)
-5. Le numéro est enregistré dans la table "utilisateur"
-6. L'utilisateur est redirigé avec confirmation
+1. Inscription Utilisateur :
+   - L'utilisateur accède à index.html
+   - Clique sur "COMMENCER" → form_inscription.php
+   - Saisit son numéro de téléphone
+   - traitement_inscription.php reçoit le numéro
+   - Un ID unique est généré (ex: id7aB9)
+   - Le numéro est enregistré dans la table "utilisateur"
+   - Redirection vers catalogue.php
+
+2. Navigation dans le catalogue :
+   - L'utilisateur voit la liste des livreurs disponibles
+   - Peut filtrer par type de véhicule, poids, note
+   - Consulte les détails (note, capacité, contact)
+   - Sélectionne un livreur → redirection vers création de livraison
+
+
+========================================
+TECHNOLOGIES UTILISÉES
+========================================
+
+Frontend :
+- HTML5
+- CSS3 (variables CSS, Flexbox, Grid)
+- JavaScript (ES6+)
+- Google Fonts (Syne, DM Sans)
+- Font Awesome 6.4.0 (icônes)
+
+Backend :
+- PHP 7.4+
+- PDO pour les requêtes SQL préparées
+- MySQL/MariaDB
+
+Design :
+- Architecture MVC simplifiée
+- Responsive Design (mobile-first)
+- Glassmorphism (effets de transparence)
+- Palette : Orange (#e67e22), Gris (#475569, #64748b)
 
 
 ========================================
@@ -92,12 +190,19 @@ Inscription Utilisateur :
 ========================================
 
 À développer :
-- Formulaire d'inscription des livreurs
-- Système de connexion/authentification
-- Interface de demande de livraison
-- Tableau de bord livreur
-- Système de géolocalisation
-- Paiement en ligne
-- Notifications
+- Formulaire d'inscription des livreurs (upload documents)
+- Système de connexion/authentification complet (session PHP)
+- Page de création de livraison (creer_livraison.php)
+- Tableau de bord livreur (gestion des livraisons acceptées)
+- Tableau de bord client (historique des livraisons)
+- Système de géolocalisation (API maps)
+- Suivi en temps réel des livraisons
+- Paiement en ligne (Mobile Money : Orange Money, MTN Mobile Money)
+- Notifications (SMS, email, push)
+- Page de détails d'une livraison
+- Système de messagerie client-livreur
+- API REST pour application mobile future
+- Page de notation après livraison
+- Gestion des litiges
 
 ========================================
