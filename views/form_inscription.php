@@ -165,7 +165,7 @@
     <p class="subtitle">Entrez votre numéro de téléphone pour continuer</p>
 
     <!-- Formulaire -->
-    <form action="../models/traitement_inscription.php" method="POST">
+    <form action="../models/inscrire_user.php" method="POST">
 
       <div class="form-group">
         <label for="telephone">Numéro de téléphone</label>
