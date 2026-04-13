@@ -30,7 +30,7 @@ CREATE TABLE livreur (
 -- =========================
 CREATE TABLE utilisateur (
     id_user VARCHAR(20) NOT NULL PRIMARY KEY,
-    numero VARCHAR(20) UNIQUE NOT NULL,
+    mail VARCHAR(200) UNIQUE NOT NULL,
     nom_utilisateur VARCHAR(100) NULL,
     date_creation DATETIME DEFAULT CURRENT_TIMESTAMP
 );

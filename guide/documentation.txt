@@ -206,3 +206,54 @@ Design :
 - Gestion des litiges
 
 ========================================
+ mots de passe application "avfy cxnf yjsz ruaj"
+
+
+
+
+
+ <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+// Assurez-vous d'avoir inclus l'autoload de Composer
+require 'vendor/autoload.php';
+
+function envoyerMail($destinataire, $message) {
+    $mail = new PHPMailer(true);
+
+    try {
+        // Configuration du serveur SMTP
+        $mail->isSMTP();
+        $mail->Host       = 'node14-ca.n0c.com'; // Remplacez par l'adresse de votre serveur SMTP
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'guideme@theprinceibrahim.com'; // Remplacez par votre email
+        $mail->Password   = 'wH3^RvR,w^%932,%wW';      // Remplacez par votre mot de passe
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        // Expéditeur
+        $mail->setFrom('GuideMe@theprinceibrahim.com', 'GuideMe'); // Remplacez par votre nom et email
+
+        // Destinataire
+        $mail->addAddress($destinataire);
+
+        // Contenu de l'email
+        $mail->isHTML(true);  // Définir le format de l'email en HTML
+        $mail->CharSet = 'UTF-8'; // Définir l'encodage
+        $mail->Subject = 'Nouvelle Réservation'; // Vous pouvez définir un sujet par défaut ou le passer en paramètre
+        $mail->Body    = $message;
+
+        // Envoyer l'email
+        $mail->send();
+        echo 'Message envoyé avec succès';
+    } catch (Exception $e) {
+        echo "Le message n'a pas pu être envoyé. Erreur de Mailer: {$mail->ErrorInfo}";
+    }
+}
+
+// // Exemple d'utilisation
+// $destinataire = 'yamiyamigomi@gmail.com';
+// $message = '<p>Ceci est un message de test envoyé via PHPMailer.</p>';
+
+// envoyerMail($destinataire, $message);

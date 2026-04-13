@@ -116,7 +116,7 @@
       font-size: 1.3rem;
     }
 
-    input[type="mail"] {
+    input[type="text"] {
       background: transparent;
       border: none;
       outline: none;
@@ -161,21 +161,19 @@
     <!-- Logo -->
     <div style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;background:#00D4E8;border:2px solid #00D4E8;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));font-family:'Barlow Condensed',sans-serif;font-weight:900;font-style:italic;font-size:1.3rem;color:#1C1F24;letter-spacing:-.02em;">L.Pro</div>
 
-    <h1>Commencer maintenant</h1>
-    <p class="subtitle">Entrez votre Adresse mail pour continuer</p>
+    <h1>code de vérification</h1>
 
     <!-- Formulaire -->
-   <form action="../models/inscrire_user.php" method="POST">
+   <form action="" method="POST">
     <!-- <form action="../models/send_mail.php" method="POST"> -->
       <div class="form-group">
-        <label for="telephone">Adresse mail</label>
         <div class="phone-input">
           <i class="fas fa-phone"></i>
           <input
-            type="mail"
-            id="mail"
-            name="mail"
-            placeholder="exemple@gmail.com"
+            type="text"
+            id="text"
+            name="text"
+            placeholder="Saisir le code de validation"
             required
           >
         </div>
@@ -187,9 +185,7 @@
 
     </form>
 
-    <div class="info">
-      Vous recevrez un code de vérification par mail
-    </div>
+    
 
   </div>
 

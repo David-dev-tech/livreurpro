@@ -1,5 +1,13 @@
 <?php
-// traitement.php
+// pour send le mail
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require '../PHPMailer-master/src/PHPMailer.php';
+require '../PHPMailer-master/src/SMTP.php';
+require '../PHPMailer-master/src/Exception.php';
+
 
 // Inclusion du fichier de configuration (connexion à la base de données)
 require_once '../config/config.php';
@@ -9,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Récupération du numéro envoyé via le formulaire
     // trim() permet de supprimer les espaces inutiles
-    $numero = trim($_POST['numero'] ?? '');
+    $mail = trim($_POST['mail'] ?? '');
 
     // Génération d'un identifiant aléatoire
     // Liste des caractères possibles pour l'ID
@@ -28,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_user = 'id' . $aleatoire;
 
     // Vérification que le champ numéro n'est pas vide
-    if (empty($numero)) {
+    if (empty($mail)) {
         // Redirection avec message d'erreur si le numéro est vide
         header('Location: form_inscription.php');
         exit;
@@ -37,14 +45,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // Préparation de la requête SQL pour éviter les injections SQL
         // La date de création est ajoutée automatiquement par MySQL (NOW())
-        $stmt = $pdo->prepare("INSERT INTO utilisateur (id_user, numero, date_creation) VALUES (?, ?, NOW())");
+        $stmt = $pdo->prepare("INSERT INTO utilisateur (id_user, mail, date_creation) VALUES (?, ?, NOW())");
 
         // Exécution de la requête avec les valeurs
-        $stmt->execute([$id_user, $numero]);
+        $stmt->execute([$id_user, $mail]);
 
         // Redirection en cas de succès
-        header('Location: ../views/catalogue.php');
-        exit;
+        // header('Location: send_mail.php');
+        // exit;
+
+
+
+
+
+
+
+    $mail = new PHPMailer(true);
+
+    try {
+        // 🔧 Configuration SMTP Gmail
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+
+        $mail->Username = 'monsieuretonde@gmail.com'; // 🔴 ton gmail
+        $mail->Password = 'avfy cxnf yjsz ruaj'; // 🔴 celui généré
+
+        $mail->SMTPSecure = 'tls';
+        $mail->Port = 587;
+
+        $mail->SMTPOptions = array(
+    'ssl' => array(
+        'verify_peer' => false,
+        'verify_peer_name' => false,
+        'allow_self_signed' => true
+    )
+);
+
+        // 📩 Expéditeur
+        $mail->setFrom('monsieuretonde@gmail.com', 'Livpro');
+
+        // 📬 Destinataire
+        $mail->addAddress('leaannatismey@gmail.com');
+
+        // 📝 Contenu
+        $mail->isHTML(true);
+        $mail->Subject = 'Nouveau message';
+
+        $mail->Body = "
+            <h3>votre code est $id_user</h3>
+            
+        ";
+
+        $mail->send();
+        header('Location: ../views/otp.php');
+
+    } catch (Exception $e) {
+        echo "❌ Erreur: {$mail->ErrorInfo}";
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     } catch (PDOException $e) {
         // En cas d'erreur SQL, on enregistre l'erreur dans les logs
