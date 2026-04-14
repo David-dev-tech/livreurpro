@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LivreurPro - Inscription</title>
   
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900&family=Barlow:wght@400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
   <style>
@@ -159,14 +158,12 @@
   <div class="form-container">
 
     <!-- Logo -->
-    <div style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;background:#00D4E8;border:2px solid #00D4E8;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));font-family:'Barlow Condensed',sans-serif;font-weight:900;font-style:italic;font-size:1.3rem;color:#1C1F24;letter-spacing:-.02em;">L.Pro</div>
-
+<div style="display:inline-flex;align-items:center;justify-content:center;width:75px;height:48px;background:#00D4E8;border:2px solid #00D4E8;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));font-family:'Barlow Condensed',sans-serif;font-weight:900;font-style:italic;font-size:1.3rem;color:#1C1F24;letter-spacing:-.02em;">L.Pro</div>
     <h1>Commencer maintenant</h1>
     <p class="subtitle">Entrez votre Adresse mail pour continuer</p>
 
     <!-- Formulaire -->
    <form action="../models/inscrire_user.php" method="POST">
-    <!-- <form action="../models/send_mail.php" method="POST"> -->
       <div class="form-group">
         <label for="telephone">Adresse mail</label>
         <div class="phone-input">

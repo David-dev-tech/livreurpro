@@ -164,7 +164,7 @@
     <h1>code de vérification</h1>
 
     <!-- Formulaire -->
-   <form action="" method="POST">
+   <form action="catalogue.php" method="POST">
     <!-- <form action="../models/send_mail.php" method="POST"> -->
       <div class="form-group">
         <div class="phone-input">
