@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Récupération du numéro envoyé via le formulaire
     // trim() permet de supprimer les espaces inutiles
-    $mail = trim($_POST['mail'] ?? '');
+    $mail0 = trim($_POST['mail'] ?? '');
 
     // Génération d'un identifiant aléatoire
     // Liste des caractères possibles pour l'ID
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_user = 'id' . $aleatoire;
 
     // Vérification que le champ numéro n'est pas vide
-    if (empty($mail)) {
+    if (empty($mail0)) {
         // Redirection avec message d'erreur si le numéro est vide
         header('Location: form_inscription.php');
         exit;
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("INSERT INTO utilisateur (id_user, mail, date_creation) VALUES (?, ?, NOW())");
 
         // Exécution de la requête avec les valeurs
-        $stmt->execute([$id_user, $mail]);
+        $stmt->execute([$id_user, $mail0]);
 
         // Redirection en cas de succès
         // header('Location: send_mail.php');
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mail->setFrom('monsieuretonde@gmail.com', 'Livpro');
 
         // 📬 Destinataire
-        $mail->addAddress('leaannatismey@gmail.com');
+        $mail->addAddress($mail0);
 
         // 📝 Contenu
         $mail->isHTML(true);
