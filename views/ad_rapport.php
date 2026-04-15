@@ -185,6 +185,103 @@
             font-weight: 300;
         }
 
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--anthracite2);
+            border: 1px solid var(--anthracite3);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--cyan);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--cyan-border);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            color: var(--grey);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            color: var(--cyan);
+            opacity: 0.5;
+        }
+
+        .stat-value {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--white);
+        }
+
+        /* Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: var(--anthracite2);
+            border: 1px solid var(--anthracite3);
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--cyan);
+        }
+
+        .chart-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--white);
+            letter-spacing: 0.05em;
+        }
+
+        canvas {
+            max-height: 250px;
+            width: 100%;
+        }
+
         /* Tables */
         .table-section {
             background: var(--anthracite2);
@@ -226,7 +323,7 @@
             margin-right: 0.5rem;
         }
 
-        .btn-add {
+        .btn-export {
             background: var(--cyan);
             color: var(--anthracite);
             border: none;
@@ -239,7 +336,7 @@
             transition: opacity 0.3s;
         }
 
-        .btn-add:hover {
+        .btn-export:hover {
             opacity: 0.85;
         }
 
@@ -285,149 +382,6 @@
             background: rgba(239,68,68,0.15);
             color: var(--danger);
             border: 1px solid rgba(239,68,68,0.3);
-        }
-
-        .action-btns {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .action-btn {
-            background: none;
-            border: none;
-            color: var(--grey);
-            cursor: pointer;
-            font-size: 1rem;
-            transition: color 0.3s;
-        }
-
-        .action-btn:hover {
-            color: var(--cyan);
-        }
-
-        .action-btn.delete:hover {
-            color: var(--danger);
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 300;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--anthracite2);
-            border: 1px solid var(--cyan-border);
-            width: 90%;
-            max-width: 500px;
-            position: relative;
-        }
-
-        .modal-content::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 3px;
-            height: 100%;
-            background: var(--cyan);
-        }
-
-        .modal-header {
-            padding: 1.2rem 1.5rem;
-            border-bottom: 1px solid var(--anthracite3);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-size: 1.2rem;
-            color: var(--white);
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--grey);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--grey);
-            margin-bottom: 0.4rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 0.7rem 1rem;
-            background: var(--anthracite);
-            border: 1px solid var(--anthracite3);
-            font-family: 'Barlow', sans-serif;
-            font-size: 0.9rem;
-            color: var(--white);
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--cyan);
-        }
-
-        .modal-footer {
-            padding: 1rem 1.5rem 1.5rem;
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-        }
-
-        .btn-primary {
-            background: var(--cyan);
-            color: var(--anthracite);
-            border: none;
-            padding: 0.6rem 1.5rem;
-            font-family: 'Barlow Condensed', sans-serif;
-            font-size: 0.8rem;
-            letter-spacing: 0.1em;
-            cursor: pointer;
-        }
-
-        .btn-secondary {
-            background: var(--anthracite3);
-            color: var(--grey-light);
-            border: none;
-            padding: 0.6rem 1.5rem;
-            font-family: 'Barlow Condensed', sans-serif;
-            font-size: 0.8rem;
-            cursor: pointer;
         }
 
         /* Responsive */
@@ -521,11 +475,6 @@
             th, td {
                 padding: 0.8rem;
             }
-
-            .action-btns {
-                flex-direction: column;
-                gap: 0.3rem;
-            }
         }
 
         @media (max-width: 480px) {
@@ -560,9 +509,9 @@
                 <div class="nav-links" id="navLinks">
                     <a href="ad_dashboard.php">Dashboard</a>
                     <a href="ad_utilisateur.php">Utilisateurs</a>
-                    <a href="ad_livreur.php" class="active">Livreurs</a>
+                    <a href="ad_livreur.php">Livreurs</a>
                     <a href="ad_livraison.php">Livraisons</a>
-                    <a href="ad_rapport.php">Rapports</a>
+                    <a href="ad_rapport.php" class="active">Rapports</a>
                     <div class="user-info">
                         <i class="fas fa-user-shield"></i>
                         <span>Admin</span>
@@ -578,51 +527,38 @@
     <main class="main">
         <div class="container">
             <div class="page-header">
-                <h1 class="page-title">Gestion des Livreurs</h1>
-                <p class="page-subtitle">Gérez tous les livreurs de votre équipe</p>
+                <h1 class="page-title">Rapports & Statistiques</h1>
+                <p class="page-subtitle">Analysez les performances de votre activité</p>
             </div>
 
             <!-- Content Area - Empty -->
+            <!-- Stats Cards Section -->
+            <div class="stats-grid">
+                <!-- Empty stat cards area -->
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-grid">
+                <!-- Empty charts area -->
+            </div>
+
+            <!-- Reports Table Section -->
             <div class="table-section">
                 <div class="table-header">
-                    <div class="table-title"><i class="fas fa-truck"></i> Liste des livreurs</div>
-                    <button class="btn-add" onclick="openAddModal()"><i class="fas fa-plus"></i> Ajouter</button>
+                    <div class="table-title"><i class="fas fa-chart-bar"></i> Rapports disponibles</div>
+                    <button class="btn-export" onclick="exportReport()"><i class="fas fa-download"></i> Exporter</button>
                 </div>
                 <table>
                     <thead>
-                        <tr><th>Nom</th><th>Téléphone</th><th>Véhicule</th><th>Zone</th><th>Statut</th><th>Actions</th></tr>
+                        <tr><th>Rapport</th><th>Période</th><th>Type</th><th>Statut</th><th>Actions</th></tr>
                     </thead>
-                    <tbody id="mainTableBody">
+                    <tbody id="reportTableBody">
                         <!-- Empty work zone -->
                     </tbody>
                 </table>
             </div>
         </div>
     </main>
-
-    <!-- Modal -->
-    <div class="modal" id="addModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Ajouter un livreur</h3>
-                <button class="modal-close" onclick="closeAddModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Nom</label>
-                    <input type="text" id="newItemName" placeholder="Nom du livreur">
-                </div>
-                <div class="form-group">
-                    <label>Téléphone</label>
-                    <input type="tel" id="newItemPhone" placeholder="+237 6XX XX XX XX">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeAddModal()">Annuler</button>
-                <button class="btn-primary" onclick="addItem()">Ajouter</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         // Menu Hamburger
@@ -666,18 +602,8 @@
             });
         });
 
-        // Modal functions
-        function openAddModal() {
-            document.getElementById('addModal').classList.add('active');
-        }
-
-        function closeAddModal() {
-            document.getElementById('addModal').classList.remove('active');
-        }
-
-        function addItem() {
-            alert('Fonction à implémenter');
-            closeAddModal();
+        function exportReport() {
+            alert('Fonction d\'export à implémenter');
         }
 
         function logout() {

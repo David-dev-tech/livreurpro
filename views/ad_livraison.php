@@ -560,8 +560,8 @@
                 <div class="nav-links" id="navLinks">
                     <a href="ad_dashboard.php">Dashboard</a>
                     <a href="ad_utilisateur.php">Utilisateurs</a>
-                    <a href="ad_livreur.php" class="active">Livreurs</a>
-                    <a href="ad_livraison.php">Livraisons</a>
+                    <a href="ad_livreur.php">Livreurs</a>
+                    <a href="ad_livraison.php" class="active">Livraisons</a>
                     <a href="ad_rapport.php">Rapports</a>
                     <div class="user-info">
                         <i class="fas fa-user-shield"></i>
@@ -578,19 +578,19 @@
     <main class="main">
         <div class="container">
             <div class="page-header">
-                <h1 class="page-title">Gestion des Livreurs</h1>
-                <p class="page-subtitle">Gérez tous les livreurs de votre équipe</p>
+                <h1 class="page-title">Gestion des Livraisons</h1>
+                <p class="page-subtitle">Suivez et gérez toutes les livraisons</p>
             </div>
 
             <!-- Content Area - Empty -->
             <div class="table-section">
                 <div class="table-header">
-                    <div class="table-title"><i class="fas fa-truck"></i> Liste des livreurs</div>
+                    <div class="table-title"><i class="fas fa-box"></i> Liste des livraisons</div>
                     <button class="btn-add" onclick="openAddModal()"><i class="fas fa-plus"></i> Ajouter</button>
                 </div>
                 <table>
                     <thead>
-                        <tr><th>Nom</th><th>Téléphone</th><th>Véhicule</th><th>Zone</th><th>Statut</th><th>Actions</th></tr>
+                        <tr><th>ID</th><th>Client</th><th>Livreur</th><th>Montant</th><th>Statut</th><th>Date</th><th>Actions</th></tr>
                     </thead>
                     <tbody id="mainTableBody">
                         <!-- Empty work zone -->
@@ -604,17 +604,17 @@
     <div class="modal" id="addModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Ajouter un livreur</h3>
+                <h3 class="modal-title">Ajouter une livraison</h3>
                 <button class="modal-close" onclick="closeAddModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Nom</label>
-                    <input type="text" id="newItemName" placeholder="Nom du livreur">
+                    <label>Client</label>
+                    <input type="text" id="newItemClient" placeholder="Nom du client">
                 </div>
                 <div class="form-group">
-                    <label>Téléphone</label>
-                    <input type="tel" id="newItemPhone" placeholder="+237 6XX XX XX XX">
+                    <label>Montant</label>
+                    <input type="text" id="newItemAmount" placeholder="Montant en FCFA">
                 </div>
             </div>
             <div class="modal-footer">
