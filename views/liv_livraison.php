@@ -25,8 +25,8 @@
                 </a>
 
                 <div class="nav-links" id="navLinks">
-                    <a href="liv_dashboard.php"  class="active">Dashboard</a>
-                    <a href="liv_livraison.php" >Mes Livraisons</a>
+                    <a href="liv_dashboard.php">Dashboard</a>
+                    <a href="liv_livraison.php" class="active">Mes Livraisons</a>
                     <a href="liv_note.php">Note</a>
                     <a href="liv_compte.php">Compte</a>
                     <div class="user-info">

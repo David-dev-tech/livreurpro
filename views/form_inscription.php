@@ -165,6 +165,8 @@
     <!-- Formulaire -->
    <form action="../models/inscrire_user.php" method="POST">
       <div class="form-group">
+        
+
         <label for="telephone">Adresse mail</label>
         <div class="phone-input">
           <i class="fas fa-phone"></i>

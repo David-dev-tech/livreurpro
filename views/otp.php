@@ -180,7 +180,7 @@
       </div>
 
       <button type="submit" class="btn-submit">
-        DÉMARRER 0000
+        DÉMARRER
       </button>
 
     </form>

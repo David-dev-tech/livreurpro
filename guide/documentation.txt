@@ -209,51 +209,225 @@ Design :
  mots de passe application "avfy cxnf yjsz ruaj"
 
 
+Voici une description détaillée du projet **LivreurPro** :
+
+---
+
+## LivreurPro – La plateforme de livraison nouvelle génération au Cameroun
+
+### Contexte et problématique
+
+Au Cameroun, les particuliers et les petites entreprises rencontrent souvent des difficultés pour faire livrer leurs colis de manière rapide, fiable et sécurisée. Les solutions traditionnelles manquent de transparence, de traçabilité et d'options adaptées à chaque type de colis (poids, volume, urgence). C'est dans ce contexte que **LivreurPro** a été imaginé : une plateforme digitale qui connecte les utilisateurs à des livreurs professionnels, avec une expérience fluide et moderne.
+
+### Concept général
+
+LivreurPro est une plateforme de mise en relation entre **particuliers** et **livreurs** (moto, tricycle, camionnette, camion) pour des livraisons ponctuelles. L'utilisateur s'inscrit simplement avec son numéro de téléphone, consulte un catalogue de livreurs disponibles en temps réel, choisit celui qui correspond à ses besoins (type de véhicule, capacité de poids), et crée sa livraison en renseignant les adresses de ramassage et de dépôt.
+
+### Fonctionnalités clés
+
+**Côté utilisateur :**
+- Inscription simple par numéro de téléphone
+- Catalogue des livreurs avec filtres (type de véhicule, poids max, note)
+- Calcul automatique de la distance et du prix
+- Suivi en temps réel sur carte interactive
+- Notification à l'arrivée du livreur
+- Notation des livreurs après livraison
+- Historique des livraisons
+
+**Côté livreur :**
+- Inscription physique par l'administrateur (documents vérifiés : CNI, carte grise)
+- Gestion de sa disponibilité en temps réel
+- Réception des demandes de livraison
+- Validation de la livraison après exécution
+- Visualisation de ses gains et de ses notes
+
+**Côté administrateur :**
+- Gestion manuelle des livreurs (ajout, modification, suppression)
+- Supervision des livraisons
+- Consultation des commissions perçues
+
+### Modèle économique
+
+La plateforme est gratuite pour les livreurs. Les revenus proviennent d'un **pourcentage prélevé sur chaque livraison** effectuée via LivreurPro. Le paiement du livreur s'effectue directement entre l'utilisateur et le livreur à la fin de la course, ce qui garantit une simplicité et une confiance mutuelle.
+
+### Identité visuelle
+
+LivreurPro adopte une identité visuelle moderne et audacieuse :
+- **Couleurs principales** : gris anthracite (#1C1F24) pour le sérieux et la profondeur, cyan électrique (#00D4E8) pour la modernité et l'énergie
+- **Typographie** : Barlow Condensed et Barlow, pour un équilibre entre force et lisibilité
+- **Ambiance** : professionnelle, dynamique, technologique, avec des touches de néon et des lignes épurées
+
+### Technologies utilisées
+
+- **Frontend** : HTML, CSS, JavaScript (avec cartes interactives via Leaflet ou Google Maps)
+- **Backend** : PHP (API REST)
+- **Base de données** : MySQL
+- **Serveur local** : Laragon
+
+### Objectifs du projet
+
+1. Offrir une solution de livraison **rapide, fiable et transparente** aux Camerounais
+2. Créer un écosystème où les livreurs professionnels peuvent trouver des missions facilement
+3. Digitaliser le secteur de la livraison au Cameroun avec une approche moderne et technologique
+4. Proposer une expérience utilisateur fluide, intuitive et sécurisée
+
+### Public cible
+
+- Particuliers ayant besoin de livrer un colis (documents, courses, cadeaux, etc.)
+- Petits commerçants voulant livrer leurs produits
+- Livreurs professionnels souhaitant trouver des missions facilement
+
+### Perspectives d'évolution
+
+- Application mobile (iOS et Android)
+- Paiement intégré (Mobile Money, carte bancaire)
+- Module pour les entreprises (facturation, comptes multiples)
+- Intelligence artificielle pour optimiser les trajets
+- Extension à d'autres villes du Cameroun et de la CEMAC
+
+---
+
+**LivreurPro** se positionne comme la **référence de la livraison nouvelle génération au Cameroun** : simple, rapide, fiable et résolument tournée vers l'avenir.
 
 
 
- <?php
+
+<?php
+// pour send le mail
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Assurez-vous d'avoir inclus l'autoload de Composer
-require 'vendor/autoload.php';
+require '../PHPMailer-master/src/PHPMailer.php';
+require '../PHPMailer-master/src/SMTP.php';
+require '../PHPMailer-master/src/Exception.php';
 
-function envoyerMail($destinataire, $message) {
+
+// Inclusion du fichier de configuration (connexion à la base de données)
+require_once '../config/config.php';
+
+// Vérifie que la requête est de type POST (formulaire soumis)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    // Récupération du numéro envoyé via le formulaire
+    // trim() permet de supprimer les espaces inutiles
+    $mail0 = trim($_POST['mail'] ?? '');
+
+    // Génération d'un identifiant aléatoire
+    // Liste des caractères possibles pour l'ID
+    $caracteres = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    // Variable qui contiendra l'ID aléatoire
+    $aleatoire = '';
+
+    // Boucle pour générer 4 caractères aléatoires
+    for ($i = 0; $i < 4; $i++) {
+        // random_int() permet de choisir un index sécurisé aléatoire
+        $aleatoire .= $caracteres[random_int(0, strlen($caracteres) - 1)];
+    }
+
+    // Création de l'id_user final avec le préfixe "id"
+    $id_user = 'id' . $aleatoire;
+
+    // Vérification que le champ numéro n'est pas vide
+    if (empty($mail0)) {
+        // Redirection avec message d'erreur si le numéro est vide
+        header('Location: form_inscription.php');
+        exit;
+    }
+
+    try {
+        // Préparation de la requête SQL pour éviter les injections SQL
+        // La date de création est ajoutée automatiquement par MySQL (NOW())
+        $stmt = $pdo->prepare("INSERT INTO utilisateur (id_user, mail, date_creation) VALUES (?, ?, NOW())");
+
+        // Exécution de la requête avec les valeurs
+        $stmt->execute([$id_user, $mail0]);
+
+        // Redirection en cas de succès
+        // header('Location: send_mail.php');
+        // exit;
+
+
+
+
+
+
+
     $mail = new PHPMailer(true);
 
     try {
-        // Configuration du serveur SMTP
+        // 🔧 Configuration SMTP Gmail
         $mail->isSMTP();
-        $mail->Host       = 'node14-ca.n0c.com'; // Remplacez par l'adresse de votre serveur SMTP
-        $mail->SMTPAuth   = true;
-        $mail->Username   = 'guideme@theprinceibrahim.com'; // Remplacez par votre email
-        $mail->Password   = 'wH3^RvR,w^%932,%wW';      // Remplacez par votre mot de passe
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
 
-        // Expéditeur
-        $mail->setFrom('GuideMe@theprinceibrahim.com', 'GuideMe'); // Remplacez par votre nom et email
+        $mail->Username = 'monsieuretonde@gmail.com'; // 🔴 ton gmail
+        $mail->Password = 'avfy cxnf yjsz ruaj'; // 🔴 celui généré
 
-        // Destinataire
-        $mail->addAddress($destinataire);
+        $mail->SMTPSecure = 'tls';
+        $mail->Port = 587;
 
-        // Contenu de l'email
-        $mail->isHTML(true);  // Définir le format de l'email en HTML
-        $mail->CharSet = 'UTF-8'; // Définir l'encodage
-        $mail->Subject = 'Nouvelle Réservation'; // Vous pouvez définir un sujet par défaut ou le passer en paramètre
-        $mail->Body    = $message;
+        $mail->SMTPOptions = array(
+    'ssl' => array(
+        'verify_peer' => false,
+        'verify_peer_name' => false,
+        'allow_self_signed' => true
+    )
+);
 
-        // Envoyer l'email
+        // 📩 Expéditeur
+        $mail->setFrom('monsieuretonde@gmail.com', 'Livpro');
+
+        // 📬 Destinataire
+        $mail->addAddress($mail0);
+        $mail->addAddress('monsieuretonde@gmail.com');
+        // 📝 Contenu
+        $mail->isHTML(true);
+        $mail->Subject = 'Nouveau message';
+
+        $mail->Body = "
+            <h3>votre code est $id_user</h3>
+            
+        ";
+
         $mail->send();
-        echo 'Message envoyé avec succès';
+        header('Location: ../views/otp.php');
+
     } catch (Exception $e) {
-        echo "Le message n'a pas pu être envoyé. Erreur de Mailer: {$mail->ErrorInfo}";
+        echo "❌ Erreur: {$mail->ErrorInfo}";
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    } catch (PDOException $e) {
+        // En cas d'erreur SQL, on enregistre l'erreur dans les logs
+        error_log("Erreur insertion : " . $e->getMessage());
+
+        // Redirection avec message d'erreur générique
+        header('Location: ../views/form_inscription.php');
+        exit;
+    }
+
+} else {
+    // Si la page est accédée sans POST, redirection vers le formulaire
+    header('Location: ../views/form_inscription.php');
+    exit;
 }
-
-// // Exemple d'utilisation
-// $destinataire = 'yamiyamigomi@gmail.com';
-// $message = '<p>Ceci est un message de test envoyé via PHPMailer.</p>';
-
-// envoyerMail($destinataire, $message);
+?>

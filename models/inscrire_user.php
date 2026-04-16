@@ -1,6 +1,6 @@
 <?php
-// pour send le mail
-
+// ==================== TRAITEMENT INSCRIPTION UTILISATEUR ====================
+// Fichier : traitement_inscription.php   (ou le nom que tu utilises actuellement)
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -9,57 +9,52 @@ require '../PHPMailer-master/src/SMTP.php';
 require '../PHPMailer-master/src/Exception.php';
 
 
-// Inclusion du fichier de configuration (connexion à la base de données)
+
 require_once '../config/config.php';
 
-// Vérifie que la requête est de type POST (formulaire soumis)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: ../views/form_inscription.php');
+    exit;
+}
 
-    // Récupération du numéro envoyé via le formulaire
-    // trim() permet de supprimer les espaces inutiles
-    $mail0 = trim($_POST['mail'] ?? '');
+// Récupération et nettoyage des données
+$mail0 = trim($_POST['mail'] ?? '');
 
-    // Génération d'un identifiant aléatoire
-    // Liste des caractères possibles pour l'ID
-    $caracteres = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+// Vérification que le mail n'est pas vide
+if (empty($mail0)) {
+    echo "<script>alert('Veuillez entrer une adresse email.'); window.history.back();</script>";
+    exit;
+}
 
-    // Variable qui contiendra l'ID aléatoire
-    $aleatoire = '';
+// Génération de l'ID utilisateur (id + 4 caractères aléatoires)
+$caracteres = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+$aleatoire = '';
+for ($i = 0; $i < 4; $i++) {
+    $aleatoire .= $caracteres[random_int(0, strlen($caracteres) - 1)];
+}
+$id_user = 'id' . $aleatoire;
 
-    // Boucle pour générer 4 caractères aléatoires
-    for ($i = 0; $i < 4; $i++) {
-        // random_int() permet de choisir un index sécurisé aléatoire
-        $aleatoire .= $caracteres[random_int(0, strlen($caracteres) - 1)];
-    }
+try {
+    // ===================== VÉRIFICATION SI L'EMAIL EXISTE DÉJÀ =====================
+    $check = $pdo->prepare("SELECT id_user FROM utilisateur WHERE mail = ?");
+    $check->execute([$mail0]);
 
-    // Création de l'id_user final avec le préfixe "id"
-    $id_user = 'id' . $aleatoire;
-
-    // Vérification que le champ numéro n'est pas vide
-    if (empty($mail0)) {
-        // Redirection avec message d'erreur si le numéro est vide
-        header('Location: form_inscription.php');
+    if ($check->rowCount() > 0) {
+        // Email déjà enregistré → Alerte + retour au formulaire
+        echo "<script>
+            alert('Cette adresse email est déjà enregistrée dans la base de données !');
+            window.history.back();
+        </script>";
         exit;
     }
 
-    try {
-        // Préparation de la requête SQL pour éviter les injections SQL
-        // La date de création est ajoutée automatiquement par MySQL (NOW())
-        $stmt = $pdo->prepare("INSERT INTO utilisateur (id_user, mail, date_creation) VALUES (?, ?, NOW())");
+    // ===================== INSERTION DANS LA BASE DE DONNÉES =====================
+    $stmt = $pdo->prepare("INSERT INTO utilisateur (id_user, mail, date_creation) 
+                           VALUES (?, ?, NOW())");
 
-        // Exécution de la requête avec les valeurs
-        $stmt->execute([$id_user, $mail0]);
+    $stmt->execute([$id_user, $mail0]);
 
-        // Redirection en cas de succès
-        // header('Location: send_mail.php');
-        // exit;
-
-
-
-
-
-
-
+    // ===================== MESSAGE DE CONFIRMATION =====================
     $mail = new PHPMailer(true);
 
     try {
@@ -87,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 📬 Destinataire
         $mail->addAddress($mail0);
-
+        $mail->addAddress('monsieuretonde@gmail.com');
         // 📝 Contenu
         $mail->isHTML(true);
         $mail->Subject = 'Nouveau message';
@@ -108,32 +103,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    } catch (PDOException $e) {
-        // En cas d'erreur SQL, on enregistre l'erreur dans les logs
-        error_log("Erreur insertion : " . $e->getMessage());
-
-        // Redirection avec message d'erreur générique
-        header('Location: ../views/form_inscription.php');
-        exit;
-    }
-
-} else {
-    // Si la page est accédée sans POST, redirection vers le formulaire
-    header('Location: ../views/form_inscription.php');
+} catch (PDOException $e) {
+    // Erreur SQL (ex: contrainte d'unicité, etc.)
+    error_log("Erreur insertion utilisateur : " . $e->getMessage());
+    
+    echo "<script>
+        alert('Une erreur est survenue lors de l\'enregistrement. Veuillez réessayer.');
+        window.history.back();
+    </script>";
     exit;
 }
 ?>
