@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>LivreurPro | Catalogue des livreurs</title>
+    <link rel="stylesheet" href="../css/dark/us_css.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <!-- <style>
         :root {
             --anthracite:  #1C1F24;
             --anthracite2: #252930;
@@ -516,7 +517,7 @@
             .nav-links { width: 50%; padding: 60px 1.5rem 1.5rem; }
             .drivers-grid { grid-template-columns: repeat(2, 1fr); }
         }
-    </style>
+    </style> -->
 </head>
 <body>
     <header class="header">
@@ -537,7 +538,7 @@
                 <!-- Liens de navigation -->
                 <div class="nav-links" id="navLinks">
                     <a href="../index.html">Accueil</a>
-                    <a href="catalogue.php" class="active">Catalogue</a>
+                    <a href="us_catalogue.php" class="active">Catalogue</a>
                     <a href="../views/us_profil.php">Profil</a>
                     <a href="contact.php">Contact</a>
                     <div class="user-info">

@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
 
         if ($user) {
-            header('Location: ../views/catalogue.php');
+            header('Location: ../views/us_catalogue.php');
         } else {
             echo "Aucun utilisateur trouvé avec cet ID : " . htmlspecialchars($id_user);
         }

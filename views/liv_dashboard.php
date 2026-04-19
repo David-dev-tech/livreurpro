@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,700;0,900;1,900&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="../css/dark/ad_css.css">
+    <link rel="stylesheet" href="../css/dark/liv_css.css">
 
 </head>
 <body>
@@ -44,34 +44,82 @@
     <main class="main">
         <div class="container">
             <div class="page-header">
-                <h1 class="page-title">?????</h1>
-                <p class="page-subtitle">Analysez les performances de votre activité</p>
+                <h1 class="page-title">Tableau de bord</h1>
+                <p class="page-subtitle">Bienvenue, Livreur</p>
             </div>
 
-            <!-- Content Area - Empty -->
-            <!-- Stats Cards Section -->
+            <!-- Stats Cards -->
             <div class="stats-grid">
-                <!-- Empty stat cards area -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Mes livraisons</span>
+                        <i class="fas fa-users stat-icon"></i>
+                    </div>
+                    <div class="stat-value" id="totalUsers">12</div>
+                    <div class="stat-change change-positive"><i class="fas fa-arrow-up"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Mes notes</span>
+                        <i class="fas fa-truck stat-icon"></i>
+                    </div>
+                    <div class="stat-value" id="totalDrivers">4</div>
+                    <div class="stat-change change-positive"><i class="fas fa-arrow-up"></i> +3 nouveaux</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Statistique</span>
+                        <i class="fas fa-box stat-icon"></i>
+                    </div>
+                    <div class="stat-value" id="totalDeliveries">22</div>
+                    <div class="stat-change change-positive"><i class="fas fa-arrow-up"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Chiffre d'affaires</span>
+                        <i class="fas fa-chart-line stat-icon"></i>
+                    </div>
+                    <div class="stat-value" id="totalRevenue">XXX XXX</div>
+                    <div class="stat-change change-positive"><i class="fas fa-arrow-up"></i> +23% ce mois</div>
+                </div>
             </div>
 
-            <!-- Charts Section -->
+            <!-- Charts -->
             <div class="charts-grid">
-                <!-- Empty charts area -->
+                <div class="chart-card">
+                    <h3 class="chart-title"><i class="fas fa-chart-line"></i> Évolution des livraisons</h3>
+                    <canvas id="deliveriesChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3 class="chart-title"><i class="fas fa-chart-pie"></i> Répartition par véhicule</h3>
+                    <canvas id="vehicleChart"></canvas>
+                </div>
             </div>
 
-            <!-- Reports Table Section -->
+            <!-- Derniers utilisateurs -->
             <div class="table-section">
                 <div class="table-header">
-                    <div class="table-title"><i class="fas fa-chart-bar"></i> Rapports disponibles</div>
-                    <button class="btn-export" onclick="exportReport()"><i class="fas fa-download"></i> Exporter</button>
+                    <div class="table-title"><i class="fas fa-user-plus"></i> Derniers utilisateurs inscrits</div>
+                    <button class="btn-add" onclick="openAddUserModal()"><i class="fas fa-plus"></i> Ajouter</button>
                 </div>
                 <table>
                     <thead>
-                        <tr><th>Rapport</th><th>Période</th><th>Type</th><th>Statut</th><th>Actions</th></tr>
+                        <tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Date</th><th>Statut</th><th>Actions</th></tr>
                     </thead>
-                    <tbody id="reportTableBody">
-                        <!-- Empty work zone -->
-                    </tbody>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Dernières livraisons -->
+            <div class="table-section">
+                <div class="table-header">
+                    <div class="table-title"><i class="fas fa-truck"></i> Dernières livraisons</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Client</th><th>Livreur</th><th>Montant</th><th>Statut</th><th>Date</th></tr>
+                    </thead>
+                    <tbody id="deliveriesTableBody"></tbody>
                 </table>
             </div>
         </div>

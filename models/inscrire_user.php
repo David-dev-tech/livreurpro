@@ -13,7 +13,7 @@ require '../PHPMailer-master/src/Exception.php';
 require_once '../config/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../views/form_inscription.php');
+    header('Location: ../views/us_form.php');
     exit;
 }
 
@@ -93,7 +93,7 @@ try {
         ";
 
         $mail->send();
-        header('Location: ../views/otp.php');
+        header('Location: ../views/us_otp.php');
 
     } catch (Exception $e) {
         echo "❌ Erreur: {$mail->ErrorInfo}";
