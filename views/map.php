@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <!-- Feuille de style personnalisée -->
-  <link rel="stylesheet" href="style.css" />
   <style>
             /* ===========================
         RESET & BASE
