@@ -137,12 +137,13 @@ try {
     $stmtCom    = $pdo->prepare("INSERT INTO commission (id_livraison, montant) VALUES (?, ?)");
     $stmtCom->execute([$id_livraison, $commission]);
 
-    // ── Succès ────────────────────────────────────────────
+    // ── Succès avec redirection ────────────────────────────
     ob_clean();
     echo json_encode([
         'success'      => true,
         'message'      => 'Livraison créée avec succès',
         'id_livraison' => $id_livraison,
+        'redirect'     => '../views/us_livraison.php'  // Ajout de l'URL de redirection
     ], JSON_UNESCAPED_UNICODE);
     ob_end_flush();
 

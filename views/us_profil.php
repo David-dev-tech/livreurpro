@@ -27,6 +27,7 @@
                 <!-- Liens — aucun JS de fermeture, navigation libre -->
                 <div class="nav-links" id="navLinks">
                     <a href="../index.html">Accueil</a>
+                    <a href="us_livraison.php">Mes livraisons</a>
                     <a href="us_catalogue.php">Catalogue</a>
                     <a href="us_profil.php" class="active">Profil</a>
                     <a href="../contact.php">Contact</a>

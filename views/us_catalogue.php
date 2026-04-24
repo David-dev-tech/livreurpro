@@ -495,7 +495,8 @@ unset($d);
 
         <div class="nav-links" id="navLinks">
           <a href="../index.html">Accueil</a>
-          <a href="catalogue.php" class="active">Catalogue</a>
+          <a href="us_livraison.php">Mes livraisons</a>
+          <a href="us_catalogue.php" class="active">Catalogue</a>
           <a href="../views/us_profil.php">Profil</a>
           <a href="contact.php">Contact</a>
           <div class="user-info">

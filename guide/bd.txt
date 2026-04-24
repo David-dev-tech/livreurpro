@@ -10,7 +10,7 @@ CREATE DATABASE livpro;
 USE livpro;
 
 -- =========================
--- TABLE LIVREUR (inchangée)
+-- TABLE LIVREUR (avec champ type_vehicule ajouté)
 -- =========================
 CREATE TABLE livreur (
     id_livreur INT AUTO_INCREMENT PRIMARY KEY,
@@ -22,7 +22,8 @@ CREATE TABLE livreur (
     mail VARCHAR(100),
     adresse TEXT,
     numero_cni VARCHAR(50) UNIQUE,
-    carte_grise VARCHAR(255)
+    carte_grise VARCHAR(255),
+    type_vehicule ENUM('moto', 'tricycle', 'camionnette', 'camion') NOT NULL
 );
 
 -- =========================
