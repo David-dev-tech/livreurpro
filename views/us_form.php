@@ -1,3 +1,21 @@
+<?php
+require_once '../config/config.php';
+
+// Démarrer la session
+session_start();
+
+// Vérifier si la session existe et contient des données
+if (isset($_SESSION['id_user']) && !empty($_SESSION['id_user']) && 
+    isset($_SESSION['mail']) && !empty($_SESSION['mail'])) {
+    // Session active avec des données - ouvrir le catalogue
+    header('Location: ../views/us_catalogue.php');
+    exit;
+} else {
+    // Session vide ou inexistante - ouvrir le formulaire
+    header('Location: ../views/us_form.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
