@@ -1,433 +1,405 @@
-========================================
-PROJET LIVREURPRO - DOCUMENTATION
-========================================
-
-PRÉSENTATION DU PROJET
-----------------------
-LivreurPro est une plateforme de mise en relation entre des clients et des livreurs pour des services de livraison au Cameroun. Le système permet aux utilisateurs de soumettre des demandes de livraison et aux livreurs de les accepter et de les exécuter.
-
-Zone de couverture : Douala, Yaoundé, Garoua
-
-FONCTIONNALITÉS PRINCIPALES
----------------------------
-- Inscription des utilisateurs via numéro de téléphone
-- Catalogue des livreurs avec filtrage (type de véhicule, poids, note)
-- Gestion des livreurs (profil, véhicule, documents)
-- Création et suivi des livraisons
-- Système de notation des livreurs
-- Interface responsive et moderne
-
-
-========================================
-ARCHITECTURE DU PROJET (MVC)
-========================================
-
-Le projet suit une architecture MVC simplifiée :
-
-- config/     : Fichiers de configuration (BDD, constantes)
-- controllers/: Contrôleurs (logique métier)
-- models/     : Modèles (traitement des données)
-- views/      : Vues (interfaces utilisateur)
-- guide/      : Documentation et ressources
-- img/        : Assets graphiques
-
-
-========================================
-BASE DE DONNÉES (livpro)
-========================================
-
-Tables principales :
-1. utilisateur : clients qui demandent des livraisons
-   - id_user (clé primaire)
-   - numero (téléphone)
-   - date_creation
-
-2. livreur : livreurs disponibles
-   - Informations personnelles
-   - Type de véhicule (moto, tricycle, camionnette, camion)
-   - Capacité de poids max
-   - Documents
-
-3. livraison : demandes de livraison
-   - Détails de la livraison
-   - Statut
-   - Livreurs associés
-
-4. note : évaluations des livreurs
-   - Note (1-5 étoiles)
-   - Commentaires
-
-5. commission : frais de commission sur les livraisons
-
-
-========================================
-DESCRIPTION DES FICHIERS
-========================================
-
-1. config/config.php
---------------------
-Rôle : Configuration de la connexion à la base de données
-- Définit les paramètres de connexion (hôte: localhost, base: livpro, user: root, mdp: vide)
-- Crée une instance PDO pour les requêtes SQL
-- Gère les erreurs de connexion avec try/catch
-- Utilise UTF8MB4 pour le support des caractères
-- Utilisé par tous les fichiers nécessitant un accès à la BDD
-
-2. views/form_inscription.php
------------------------------
-Rôle : Formulaire d'inscription des utilisateurs
-- Interface moderne avec effet glassmorphism (backdrop-filter)
-- Demande le numéro de téléphone de l'utilisateur
-- Envoie les données à traitement_inscription.php via POST
-- Design responsive avec effets visuels modernes
-- Background : image img/img (2).jpg avec overlay blanc semi-transparent
-- Couleurs : Orange (#e67e22) comme couleur principale
-
-3. models/traitement_inscription.php
-------------------------------------
-Rôle : Traitement des données du formulaire d'inscription
-- Récupère le numéro soumis via POST
-- Génère un identifiant unique (id + 4 caractères aléatoires alphanumériques)
-- Vérifie que le champ n'est pas vide
-- Insère les données dans la table "utilisateur" avec NOW() pour la date
-- Redirige vers catalogue.php en cas de succès
-- Gère les erreurs PDO avec logging et redirection vers le formulaire
-
-4. index.html
--------------
-Rôle : Page d'accueil du site (landing page)
-- Point d'entrée principal de l'application
-- Présentation du service avec branding LivreurPro
-- Hero section avec texte à gauche et image à droite
-- Design bicolore : blanc (74.5%) / orange (25.5%)
-- Bouton "COMMENCER" redirigeant vers views/form_inscription.php
-- Responsive : s'adapte aux mobiles avec réorganisation verticale
-- Polices : Syne (titres) et DM Sans (texte) via Google Fonts
-
-5. views/catalogue.php
-----------------------
-Rôle : Catalogue des livreurs disponibles
-- Affiche la liste des livreurs avec leurs informations
-- Système de filtres :
-  * Type de véhicule (moto, tricycle, camionnette, camion)
-  * Poids maximum (kg)
-  * Note minimale (étoiles)
-- Header sticky avec navigation et info utilisateur
-- Cartes livreurs avec :
-  * Nom et prénom
-  * Type de véhicule avec icône
-  * Capacité de poids
-  * Note et nombre d'avis
-  * Numéro de téléphone
-  * Bouton "Sélectionner ce livreur"
-- Données simulées en JavaScript (9 livreurs exemples)
-- Redirection vers creer_livraison.php après sélection
-- Fonction de déconnexion avec confirmation
-
-6. guide/bd.txt
----------------
-Rôle : Script de création de la base de données
-- Contient toutes les commandes SQL pour créer la base et les tables
-- Définit la structure complète du schéma de données
-- Sert de référence pour la configuration de la BDD
-
-7. guide/documentation.txt
---------------------------
-Rôle : Ce fichier - documentation complète du projet
-
-8. dossier img/
----------------
-Rôle : Stockage des images du projet
-- img (2).jpg : Image de fond pour le formulaire d'inscription
-- img1.png : Image illustration pour la page d'accueil (livreur)
-
-
-========================================
-FLUX DE FONCTIONNEMENT ACTUEL
-========================================
-
-1. Inscription Utilisateur :
-   - L'utilisateur accède à index.html
-   - Clique sur "COMMENCER" → form_inscription.php
-   - Saisit son numéro de téléphone
-   - traitement_inscription.php reçoit le numéro
-   - Un ID unique est généré (ex: id7aB9)
-   - Le numéro est enregistré dans la table "utilisateur"
-   - Redirection vers catalogue.php
-
-2. Navigation dans le catalogue :
-   - L'utilisateur voit la liste des livreurs disponibles
-   - Peut filtrer par type de véhicule, poids, note
-   - Consulte les détails (note, capacité, contact)
-   - Sélectionne un livreur → redirection vers création de livraison
-
-
-========================================
-TECHNOLOGIES UTILISÉES
-========================================
-
-Frontend :
-- HTML5
-- CSS3 (variables CSS, Flexbox, Grid)
-- JavaScript (ES6+)
-- Google Fonts (Syne, DM Sans)
-- Font Awesome 6.4.0 (icônes)
-
-Backend :
-- PHP 7.4+
-- PDO pour les requêtes SQL préparées
-- MySQL/MariaDB
-
-Design :
-- Architecture MVC simplifiée
-- Responsive Design (mobile-first)
-- Glassmorphism (effets de transparence)
-- Palette : Orange (#e67e22), Gris (#475569, #64748b)
-
-
-========================================
-ÉVOLUTIONS PRÉVUES
-========================================
-
-À développer :
-- Formulaire d'inscription des livreurs (upload documents)
-- Système de connexion/authentification complet (session PHP)
-- Page de création de livraison (creer_livraison.php)
-- Tableau de bord livreur (gestion des livraisons acceptées)
-- Tableau de bord client (historique des livraisons)
-- Système de géolocalisation (API maps)
-- Suivi en temps réel des livraisons
-- Paiement en ligne (Mobile Money : Orange Money, MTN Mobile Money)
-- Notifications (SMS, email, push)
-- Page de détails d'une livraison
-- Système de messagerie client-livreur
-- API REST pour application mobile future
-- Page de notation après livraison
-- Gestion des litiges
-
-========================================
- mots de passe application "avfy cxnf yjsz ruaj"
-
-
-Voici une description détaillée du projet **LivreurPro** :
-
----
-
-## LivreurPro – La plateforme de livraison nouvelle génération au Cameroun
-
-### Contexte et problématique
-
-Au Cameroun, les particuliers et les petites entreprises rencontrent souvent des difficultés pour faire livrer leurs colis de manière rapide, fiable et sécurisée. Les solutions traditionnelles manquent de transparence, de traçabilité et d'options adaptées à chaque type de colis (poids, volume, urgence). C'est dans ce contexte que **LivreurPro** a été imaginé : une plateforme digitale qui connecte les utilisateurs à des livreurs professionnels, avec une expérience fluide et moderne.
-
-### Concept général
-
-LivreurPro est une plateforme de mise en relation entre **particuliers** et **livreurs** (moto, tricycle, camionnette, camion) pour des livraisons ponctuelles. L'utilisateur s'inscrit simplement avec son numéro de téléphone, consulte un catalogue de livreurs disponibles en temps réel, choisit celui qui correspond à ses besoins (type de véhicule, capacité de poids), et crée sa livraison en renseignant les adresses de ramassage et de dépôt.
-
-### Fonctionnalités clés
-
-**Côté utilisateur :**
-- Inscription simple par numéro de téléphone
-- Catalogue des livreurs avec filtres (type de véhicule, poids max, note)
-- Calcul automatique de la distance et du prix
-- Suivi en temps réel sur carte interactive
-- Notification à l'arrivée du livreur
-- Notation des livreurs après livraison
-- Historique des livraisons
-
-**Côté livreur :**
-- Inscription physique par l'administrateur (documents vérifiés : CNI, carte grise)
-- Gestion de sa disponibilité en temps réel
-- Réception des demandes de livraison
-- Validation de la livraison après exécution
-- Visualisation de ses gains et de ses notes
-
-**Côté administrateur :**
-- Gestion manuelle des livreurs (ajout, modification, suppression)
-- Supervision des livraisons
-- Consultation des commissions perçues
-
-### Modèle économique
-
-La plateforme est gratuite pour les livreurs. Les revenus proviennent d'un **pourcentage prélevé sur chaque livraison** effectuée via LivreurPro. Le paiement du livreur s'effectue directement entre l'utilisateur et le livreur à la fin de la course, ce qui garantit une simplicité et une confiance mutuelle.
-
-### Identité visuelle
-
-LivreurPro adopte une identité visuelle moderne et audacieuse :
-- **Couleurs principales** : gris anthracite (#1C1F24) pour le sérieux et la profondeur, cyan électrique (#00D4E8) pour la modernité et l'énergie
-- **Typographie** : Barlow Condensed et Barlow, pour un équilibre entre force et lisibilité
-- **Ambiance** : professionnelle, dynamique, technologique, avec des touches de néon et des lignes épurées
-
-### Technologies utilisées
-
-- **Frontend** : HTML, CSS, JavaScript (avec cartes interactives via Leaflet ou Google Maps)
-- **Backend** : PHP (API REST)
-- **Base de données** : MySQL
-- **Serveur local** : Laragon
-
-### Objectifs du projet
-
-1. Offrir une solution de livraison **rapide, fiable et transparente** aux Camerounais
-2. Créer un écosystème où les livreurs professionnels peuvent trouver des missions facilement
-3. Digitaliser le secteur de la livraison au Cameroun avec une approche moderne et technologique
-4. Proposer une expérience utilisateur fluide, intuitive et sécurisée
-
-### Public cible
-
-- Particuliers ayant besoin de livrer un colis (documents, courses, cadeaux, etc.)
-- Petits commerçants voulant livrer leurs produits
-- Livreurs professionnels souhaitant trouver des missions facilement
-
-### Perspectives d'évolution
-
-- Application mobile (iOS et Android)
-- Paiement intégré (Mobile Money, carte bancaire)
-- Module pour les entreprises (facturation, comptes multiples)
-- Intelligence artificielle pour optimiser les trajets
-- Extension à d'autres villes du Cameroun et de la CEMAC
-
----
-
-**LivreurPro** se positionne comme la **référence de la livraison nouvelle génération au Cameroun** : simple, rapide, fiable et résolument tournée vers l'avenir.
-
-
-
-
-<?php
-// pour send le mail
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-require '../PHPMailer-master/src/PHPMailer.php';
-require '../PHPMailer-master/src/SMTP.php';
-require '../PHPMailer-master/src/Exception.php';
-
-
-// Inclusion du fichier de configuration (connexion à la base de données)
-require_once '../config/config.php';
-
-// Vérifie que la requête est de type POST (formulaire soumis)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    // Récupération du numéro envoyé via le formulaire
-    // trim() permet de supprimer les espaces inutiles
-    $mail0 = trim($_POST['mail'] ?? '');
-
-    // Génération d'un identifiant aléatoire
-    // Liste des caractères possibles pour l'ID
-    $caracteres = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-    // Variable qui contiendra l'ID aléatoire
-    $aleatoire = '';
-
-    // Boucle pour générer 4 caractères aléatoires
-    for ($i = 0; $i < 4; $i++) {
-        // random_int() permet de choisir un index sécurisé aléatoire
-        $aleatoire .= $caracteres[random_int(0, strlen($caracteres) - 1)];
-    }
-
-    // Création de l'id_user final avec le préfixe "id"
-    $id_user = 'id' . $aleatoire;
-
-    // Vérification que le champ numéro n'est pas vide
-    if (empty($mail0)) {
-        // Redirection avec message d'erreur si le numéro est vide
-        header('Location: form_inscription.php');
-        exit;
-    }
-
-    try {
-        // Préparation de la requête SQL pour éviter les injections SQL
-        // La date de création est ajoutée automatiquement par MySQL (NOW())
-        $stmt = $pdo->prepare("INSERT INTO utilisateur (id_user, mail, date_creation) VALUES (?, ?, NOW())");
-
-        // Exécution de la requête avec les valeurs
-        $stmt->execute([$id_user, $mail0]);
-
-        // Redirection en cas de succès
-        // header('Location: send_mail.php');
-        // exit;
-
-
-
-
-
-
-
-    $mail = new PHPMailer(true);
-
-    try {
-        // 🔧 Configuration SMTP Gmail
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-
-        $mail->Username = 'monsieuretonde@gmail.com'; // 🔴 ton gmail
-        $mail->Password = 'avfy cxnf yjsz ruaj'; // 🔴 celui généré
-
-        $mail->SMTPSecure = 'tls';
-        $mail->Port = 587;
-
-        $mail->SMTPOptions = array(
-    'ssl' => array(
-        'verify_peer' => false,
-        'verify_peer_name' => false,
-        'allow_self_signed' => true
-    )
-);
-
-        // 📩 Expéditeur
-        $mail->setFrom('monsieuretonde@gmail.com', 'Livpro');
-
-        // 📬 Destinataire
-        $mail->addAddress($mail0);
-        $mail->addAddress('monsieuretonde@gmail.com');
-        // 📝 Contenu
-        $mail->isHTML(true);
-        $mail->Subject = 'Nouveau message';
-
-        $mail->Body = "
-            <h3>votre code est $id_user</h3>
-            
-        ";
-
-        $mail->send();
-        header('Location: ../views/otp.php');
-
-    } catch (Exception $e) {
-        echo "❌ Erreur: {$mail->ErrorInfo}";
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    } catch (PDOException $e) {
-        // En cas d'erreur SQL, on enregistre l'erreur dans les logs
-        error_log("Erreur insertion : " . $e->getMessage());
-
-        // Redirection avec message d'erreur générique
-        header('Location: ../views/form_inscription.php');
-        exit;
-    }
-
-} else {
-    // Si la page est accédée sans POST, redirection vers le formulaire
-    header('Location: ../views/form_inscription.php');
-    exit;
-}
-?>
+╔══════════════════════════════════════════════════════════════════╗
+║              LIVREURPRO — DOCUMENTATION DÉVELOPPEUR              ║
+║                         Version 2.0                              ║
+╚══════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. PRÉSENTATION DU PROJET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LivreurPro est une plateforme web de mise en relation entre des
+clients (utilisateurs) et des livreurs professionnels au Cameroun.
+
+Zones couvertes : Douala, Yaoundé, Garoua (extensible)
+
+Rôles dans le système :
+  - Utilisateur  : s'inscrit, choisit un livreur, crée une livraison
+  - Livreur      : inscrit par l'admin, reçoit et exécute les livraisons
+  - Administrateur : gère les livreurs, supervise les livraisons et commissions
+
+Serveur local recommandé : Laragon (PHP 7.4+, MySQL/MariaDB)
+Base de données           : livpro
+Encodage                  : UTF-8 MB4
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. ARCHITECTURE DU PROJET (MVC SIMPLIFIÉ)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+livreurpro/
+├── config/
+│   └── config.php              ← Connexion PDO à la base de données
+├── controllers/                ← (réservé aux futurs contrôleurs)
+├── models/
+│   ├── inscrire_user.php       ← Inscription / connexion utilisateur + envoi OTP
+│   ├── inscrire_livreur.php    ← Ajout d'un livreur (admin)
+│   ├── traiter_livraison.php   ← Création d'une livraison (JSON)
+│   ├── verif_otp.php           ← Vérification du code OTP + création session
+│   └── proxy.php               ← Proxy Nominatim (géocodage OpenStreetMap)
+├── views/
+│   ├── us_form.php             ← Formulaire d'inscription / connexion utilisateur
+│   ├── us_otp.php              ← Saisie du code OTP reçu par email
+│   ├── us_catalogue.php        ← Catalogue des livreurs + modale de livraison
+│   ├── us_livraison.php        ← Historique des livraisons de l'utilisateur
+│   ├── us_profil.php           ← Profil utilisateur
+│   ├── us_help.html            ← Guide d'utilisation (page d'aide)
+│   ├── liv_dashboard.php       ← Tableau de bord livreur
+│   ├── liv_livraison.php       ← Livraisons assignées au livreur
+│   ├── liv_compte.php          ← Compte / profil livreur
+│   ├── liv_note.php            ← Notes reçues par le livreur
+│   ├── liv_login.php           ← Connexion livreur
+│   ├── ad_dashboard.php        ← Tableau de bord administrateur
+│   ├── ad_livreur.php          ← Gestion des livreurs (admin)
+│   ├── ad_utilisateur.php      ← Gestion des utilisateurs (admin)
+│   ├── ad_livraison.php        ← Supervision des livraisons (admin)
+│   └── map.php                 ← Carte interactive (Leaflet)
+├── css/
+│   ├── dark/
+│   │   ├── us_css.css          ← Styles interface utilisateur (thème sombre)
+│   │   ├── liv_css.css         ← Styles interface livreur
+│   │   └── ad_css.css          ← Styles interface admin
+│   └── css_index.css           ← Styles page d'accueil
+├── img/                        ← Images et assets graphiques
+├── PHPMailer-master/           ← Bibliothèque PHPMailer (envoi d'emails SMTP)
+├── guide/
+│   ├── bd.txt                  ← Script SQL de création de la base
+│   └── documentation.txt       ← Ce fichier
+├── index.html                  ← Page d'accueil (thème sombre, Three.js)
+└── index2.html                 ← Page d'accueil (thème clair, variante)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. BASE DE DONNÉES — SCHÉMA (livpro)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Le script complet de création est dans guide/bd.txt.
+
+TABLE utilisateur
+  id_user        VARCHAR(20) PK   — identifiant unique généré (ex: id7aB9)
+  mail           VARCHAR(200)     — adresse email (unique, sert de login)
+  nom_utilisateur VARCHAR(100)    — nom optionnel
+  date_creation  DATETIME         — date d'inscription (NOW())
+
+TABLE livreur
+  id_livreur     INT AUTO_INCREMENT PK
+  nom, prenom    VARCHAR(100)
+  age            INT
+  sex            ENUM('M','F')
+  numero         VARCHAR(20) UNIQUE  — numéro de téléphone
+  mail           VARCHAR(100)
+  adresse        TEXT
+  numero_cni     VARCHAR(50) UNIQUE
+  carte_grise    VARCHAR(255)
+  type_vehicule  ENUM('moto','tricycle','camionnette','camion')
+
+TABLE livraison
+  id_livraison      INT AUTO_INCREMENT PK
+  id_user           VARCHAR(20) FK → utilisateur
+  id_livreur        INT FK → livreur (SET NULL si livreur supprimé)
+  adresse_ramassage TEXT            — coordonnées GPS "lat,lng"
+  adresse_depot     TEXT            — coordonnées GPS "lat,lng"
+  distance          DECIMAL(10,2)   — en kilomètres
+  prix              DECIMAL(10,2)   — en FCFA
+  poids             DECIMAL(10,2)   — en kg
+  statut            ENUM('en_attente','acceptee','en_cours','terminee','annulee')
+  type_vehicule     ENUM(...)
+  date_creation     DATETIME
+  date_validation   DATETIME
+
+TABLE note
+  id_note     INT AUTO_INCREMENT PK
+  id_livreur  INT FK → livreur
+  note        INT (1–5)
+  impression  TEXT
+
+TABLE commission
+  id_commission   INT AUTO_INCREMENT PK
+  id_livraison    INT FK → livraison
+  montant         DECIMAL(10,2)   — 10% du prix de la livraison
+  date_validation DATETIME
+
+VUE utilisateur_classe
+  SELECT * FROM utilisateur ORDER BY date_creation DESC
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. FLUX DE FONCTIONNEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+── CÔTÉ UTILISATEUR ──────────────────────────────────────────────
+
+  [1] Accueil (index.html / index2.html)
+        ↓ clic "Démarrer"
+  [2] us_form.php
+        → Si session active (id_user + mail) → redirige vers us_catalogue.php
+        → Sinon → affiche le formulaire email
+        ↓ soumission POST → models/inscrire_user.php
+  [3] inscrire_user.php
+        → Vérifie si l'email existe déjà en BD
+          • Oui → récupère l'id_user existant (connexion)
+          • Non → génère un id_user unique (ex: id7aB9) et insère en BD
+        → Envoie un email via PHPMailer (SMTP Gmail) contenant l'id_user
+        → Redirige vers views/us_otp.php
+  [4] us_otp.php
+        → L'utilisateur saisit l'id_user reçu par email
+        ↓ soumission POST → models/verif_otp.php
+  [5] verif_otp.php
+        → Vérifie l'id_user en BD
+        → Crée la session PHP : $_SESSION['id_user'] et $_SESSION['mail']
+        → Redirige vers views/us_catalogue.php
+  [6] us_catalogue.php
+        → Affiche tous les livreurs depuis la BD (avec notes moyennes)
+        → Filtres : type de véhicule, poids minimum
+        → Clic "Sélectionner" → ouvre une modale de livraison
+        → La modale contient :
+            • Récap du livreur
+            • Adresse de ramassage (sélection sur carte Leaflet)
+            • Adresse de dépôt (sélection sur carte Leaflet)
+            • Poids du colis
+            • Calcul automatique du prix (tarif/km selon véhicule)
+        ↓ soumission fetch() → models/traiter_livraison.php
+  [7] traiter_livraison.php
+        → Valide tous les champs (session, adresses, poids, prix, véhicule)
+        → Insère la livraison en BD (statut: en_attente)
+        → Crée la commission (10% du prix)
+        → Retourne JSON { success: true, id_livraison: X }
+  [8] us_livraison.php
+        → Affiche l'historique des livraisons de l'utilisateur
+        → Filtres par statut
+        → Bouton "Voir l'itinéraire" → carte Leaflet avec marqueurs A/B
+
+── CÔTÉ LIVREUR ──────────────────────────────────────────────────
+
+  Les livreurs sont inscrits manuellement par l'administrateur
+  (vérification physique des documents : CNI, carte grise).
+  Interface livreur : liv_dashboard, liv_livraison, liv_compte, liv_note
+
+── CÔTÉ ADMINISTRATEUR ───────────────────────────────────────────
+
+  Accès via ad_dashboard.php (pas d'authentification implémentée à ce stade)
+  Fonctionnalités :
+    • ad_dashboard.php   → statistiques globales + graphiques Chart.js
+    • ad_livreur.php     → liste, ajout (modale), modification, suppression
+    • ad_utilisateur.php → liste des utilisateurs inscrits
+    • ad_livraison.php   → supervision de toutes les livraisons
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. DESCRIPTION DÉTAILLÉE DES FICHIERS CLÉS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+config/config.php
+  Définit les constantes DB_HOST, DB_NAME, DB_USER, DB_PASS.
+  Crée l'instance PDO globale $pdo avec :
+    - ERRMODE_EXCEPTION (erreurs SQL visibles)
+    - FETCH_ASSOC par défaut
+    - EMULATE_PREPARES désactivé (requêtes préparées natives)
+  Utilisé via require_once dans tous les fichiers PHP nécessitant la BD.
+
+models/inscrire_user.php
+  Gère à la fois l'inscription (nouvel email) et la connexion (email existant).
+  Génère un id_user de format "id" + 4 caractères alphanumériques aléatoires.
+  Envoie un email HTML stylisé via PHPMailer (SMTP Gmail, port 587, TLS).
+  Le contenu de l'email diffère selon inscription ou connexion.
+  Redirige vers us_otp.php après envoi.
+
+models/verif_otp.php
+  Reçoit l'id_user saisi par l'utilisateur.
+  Vérifie son existence dans la table utilisateur.
+  Crée $_SESSION['id_user'] et $_SESSION['mail'] en cas de succès.
+  Redirige vers us_catalogue.php.
+
+models/traiter_livraison.php
+  Endpoint JSON (fetch POST depuis us_catalogue.php).
+  Utilise ob_start() pour éviter que des warnings PHP corrompent le JSON.
+  Valide : session, id_livreur, adresses, poids > 0, prix > 0, type_vehicule.
+  Vérifie l'existence de l'utilisateur et du livreur en BD avant insertion.
+  Insère la livraison puis crée la commission (10%).
+  Retourne { success: true/false, message: "...", id_livraison: X }.
+
+models/proxy.php
+  Proxy PHP vers l'API Nominatim (OpenStreetMap).
+  Actions supportées : search (recherche de lieu) et reverse (géocodage inverse).
+  Restreint les recherches au Cameroun (countrycodes=cm).
+  Valide les coordonnées GPS dans les limites géographiques du Cameroun.
+  Utilise cURL en priorité, file_get_contents en fallback.
+  Cache HTTP de 5 minutes (Cache-Control: public, max-age=300).
+
+models/inscrire_livreur.php
+  Reçoit les données du formulaire d'ajout livreur (admin).
+  Insère dans la table livreur avec requête préparée nommée.
+  Redirige vers ad_livreur.php en cas de succès.
+  Affiche "Element deja existant" si contrainte UNIQUE violée (numero ou CNI).
+
+views/us_catalogue.php
+  Charge tous les livreurs depuis la BD + leurs notes moyennes (JOIN).
+  Affiche une grille de cartes livreurs filtrables (JS côté client).
+  Modale de livraison avec deux sous-modales carte Leaflet (ramassage / dépôt).
+  Calcul du prix estimé côté client : distance × tarif/km selon véhicule.
+    Tarifs : moto=300, tricycle=400, camionnette=500, camion=700 FCFA/km
+  Soumission via fetch() vers traiter_livraison.php (réponse JSON).
+  Dépend de : css/dark/us_css.css, Leaflet 1.9.4, Font Awesome 6.4.
+
+views/us_livraison.php
+  Récupère les livraisons de l'utilisateur connecté (JOIN avec livreur).
+  Affiche des cartes avec statut coloré, route A→B, méta-données.
+  Filtres JS par statut (en_attente, acceptee, en_cours, terminee, annulee).
+  Modale carte Leaflet pour visualiser l'itinéraire (marqueurs A/B + ligne).
+  Les adresses stockées en BD sont au format "lat,lng" (coordonnées GPS brutes).
+
+views/us_profil.php
+  Interface de profil utilisateur (données statiques pour l'instant).
+  Onglets : Informations, Historique, Paiement.
+  Méthodes de paiement : Orange Money, MTN Mobile Money.
+  À connecter à la BD pour persister les modifications.
+
+views/ad_dashboard.php
+  Tableau de bord admin avec statistiques (Chart.js).
+  Graphiques : évolution des livraisons, répartition par véhicule.
+  Tables : derniers utilisateurs, dernières livraisons.
+  Modale d'ajout d'utilisateur (non connectée à la BD à ce stade).
+
+index.html / index2.html
+  Pages d'accueil (landing pages).
+  index.html  : thème sombre (fond #050508, cyan #00D4E8) + Three.js (particules 3D)
+  index2.html : thème clair (fond #F7F9FC, teal #007A8A) + Three.js (particules légères)
+  Icône soleil (index.html) → lien vers index2.html
+  Icône lune (index2.html) → lien vers index.html
+  Sections : Hero, À propos (4 cartes), Statistiques (compteurs animés), CTA
+  Animations : ScrollReveal, typewriter effect, compteurs IntersectionObserver
+  Responsive : breakpoints 968px et 576px
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. TECHNOLOGIES UTILISÉES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Frontend
+  HTML5, CSS3 (variables CSS, Flexbox, Grid, clip-path)
+  JavaScript ES6+ (fetch, IntersectionObserver, modules)
+  Three.js 0.128.0     — animations 3D (particules, formes géométriques)
+  Leaflet 1.9.4        — cartes interactives (sélection GPS, itinéraires)
+  ScrollReveal         — animations d'apparition au scroll
+  Chart.js             — graphiques admin
+  Font Awesome 6.4.0   — icônes
+  Google Fonts         — Barlow Condensed + Barlow
+
+Backend
+  PHP 7.4+
+  PDO + requêtes préparées (protection injection SQL)
+  Sessions PHP (authentification utilisateur)
+  PHPMailer (SMTP Gmail, TLS port 587)
+
+Base de données
+  MySQL / MariaDB
+  Base : livpro
+  5 tables : utilisateur, livreur, livraison, note, commission
+  1 vue    : utilisateur_classe
+
+Géocodage
+  Nominatim (OpenStreetMap) via proxy PHP (models/proxy.php)
+  Restriction géographique : Cameroun uniquement
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. CONFIGURATION ET INSTALLATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Cloner / copier le projet dans le dossier www/ de Laragon.
+
+2. Créer la base de données :
+   Ouvrir HeidiSQL ou phpMyAdmin et exécuter le contenu de guide/bd.txt.
+
+3. Vérifier config/config.php :
+   DB_HOST = 'localhost'
+   DB_NAME = 'livpro'
+   DB_USER = 'root'
+   DB_PASS = ''   (vide par défaut sur Laragon)
+
+4. Configurer PHPMailer (models/inscrire_user.php) :
+   Remplacer Username et Password par vos propres identifiants Gmail.
+   Le mot de passe doit être un "App Password" Google (pas le mot de passe Gmail).
+   Générer un App Password : myaccount.google.com → Sécurité → Mots de passe d'application
+
+5. Accéder au projet :
+   http://localhost/livreurpro/index.html
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. POINTS D'ATTENTION ET BONNES PRATIQUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sécurité
+  - Toutes les requêtes SQL utilisent des requêtes préparées PDO.
+  - Les sorties HTML utilisent htmlspecialchars() pour éviter les XSS.
+  - Les sessions PHP sont démarrées avec session_start() avant tout output.
+  - Ne jamais committer les credentials SMTP dans un dépôt public.
+
+Sessions
+  - La session est créée dans verif_otp.php après validation de l'OTP.
+  - Les pages protégées vérifient isset($_SESSION['id_user']) en début de fichier.
+  - us_form.php redirige automatiquement vers le catalogue si une session est active.
+
+Adresses GPS
+  - Les adresses sont stockées en BD au format "lat,lng" (ex: "3.848,11.502").
+  - Le proxy Nominatim (models/proxy.php) est requis pour la recherche de lieux.
+  - Le calcul de distance côté client utilise la formule de Haversine.
+
+Tarification
+  - Le prix est calculé côté client (estimation) ET côté serveur (validation).
+  - Tarifs actuels (FCFA/km) : moto=300, tricycle=400, camionnette=500, camion=700
+  - Commission plateforme : 10% du prix, insérée automatiquement dans la table commission.
+
+Emails
+  - PHPMailer est configuré avec verify_peer=false (développement local).
+  - En production, activer la vérification SSL.
+  - L'email est envoyé à l'utilisateur ET en copie à l'adresse admin.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. ÉVOLUTIONS PRÉVUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Priorité haute
+  [ ] Authentification admin (login sécurisé avec session)
+  [ ] Interface livreur complète (accepter/refuser/terminer une livraison)
+  [ ] Connexion BD pour us_profil.php (persistance des données)
+  [ ] Système de notation après livraison (côté utilisateur)
+
+Priorité moyenne
+  [ ] Suivi en temps réel (WebSocket ou polling)
+  [ ] Notifications email à chaque changement de statut
+  [ ] Paiement Mobile Money (Orange Money, MTN MoMo)
+  [ ] Upload de documents livreur (CNI, carte grise) avec stockage fichier
+
+Priorité basse / futur
+  [ ] Application mobile (React Native ou Flutter)
+  [ ] API REST complète
+  [ ] Intelligence artificielle pour optimisation des trajets
+  [ ] Extension à d'autres villes (Bafoussam, Bamenda, Ngaoundéré)
+  [ ] Module entreprise (comptes multi-utilisateurs, facturation)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. IDENTITÉ VISUELLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Thème sombre (index.html, interfaces utilisateur/livreur/admin)
+  Fond principal  : #050508 / #1C1F24
+  Fond secondaire : #252930 / #2F343C
+  Accent cyan     : #00D4E8
+  Texte principal : #F2F4F7
+  Texte secondaire: #9CA3AF
+
+Thème clair (index2.html)
+  Fond principal  : #F7F9FC
+  Fond secondaire : #EEF3F9
+  Accent teal     : #007A8A
+  Accent coral    : #E85A30
+  Texte principal : #0F1C2E
+
+Typographie
+  Titres : Barlow Condensed (900, italic, uppercase)
+  Corps  : Barlow (300–700)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

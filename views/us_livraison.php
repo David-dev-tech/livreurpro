@@ -433,6 +433,31 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
     .strip-item i { color: var(--cyan); font-size: .75rem; }
     .strip-item strong { color: var(--white); }
 
+    /* Loader itinéraire */
+    .route-loader {
+      display     : none;
+      align-items : center;
+      gap         : .5rem;
+      padding     : .5rem 1.4rem;
+      background  : var(--card3);
+      font-size   : .75rem;
+      color       : var(--grey-light);
+      border-bottom: 1px solid var(--card3);
+    }
+    .route-loader.active { display: flex; }
+    .route-loader-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: pulse-dot .8s ease-in-out infinite;
+    }
+    .route-loader-dot:nth-child(2) { animation-delay: .16s; }
+    .route-loader-dot:nth-child(3) { animation-delay: .32s; }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: .3; transform: scale(.8); }
+      50%       { opacity: 1;  transform: scale(1.2); }
+    }
+
     /* Carte Leaflet */
     #detail-map {
       flex    : 1;
@@ -502,7 +527,7 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <a href="../index.html">Accueil</a>
           <a href="us_catalogue.php">Catalogue</a>
           <a href="us_profil.php">Profil</a>
-          <a href="mes_livraisons.php" class="active">Mes Livraisons</a>
+          <a href="mes_livraisons.php" class="active">Mes Commandes</a>
           <a href="contact.php">Contact</a>
           <div class="user-info">
             <i class="fas fa-user-circle"></i>
@@ -579,8 +604,6 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
       <div class="deliveries-grid" id="deliveriesGrid">
         <?php foreach ($livraisons as $liv):
           $statut    = $liv['statut'];
-          $stripeClass = 'stripe-' . str_replace('_', '', $statut === 'en_cours' ? 'cours' : ($statut === 'en_attente' ? 'attente' : $statut));
-          // Correction mapping stripe
           $stripeClass = match($statut) {
             'en_attente' => 'stripe-attente',
             'acceptee'   => 'stripe-acceptee',
@@ -602,11 +625,9 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
             ? (new DateTime($liv['date_creation']))->format('d/m/Y à H:i')
             : '—';
 
-          // Coordonnées
           $pickup_coords  = $liv['adresse_ramassage'] ?? '';
           $dropoff_coords = $liv['adresse_depot']     ?? '';
 
-          // Labels affichage (on raccourcit les coordonnées brutes)
           $pickupLabel  = $pickup_coords  ?: 'Non renseigné';
           $dropoffLabel = $dropoff_coords ?: 'Non renseigné';
 
@@ -729,6 +750,14 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="strip-item"><i class="fas fa-user"></i> Livreur : <strong id="stripLivreur">—</strong></div>
       </div>
 
+      <!-- Loader itinéraire -->
+      <div class="route-loader" id="routeLoader">
+        <div class="route-loader-dot"></div>
+        <div class="route-loader-dot"></div>
+        <div class="route-loader-dot"></div>
+        <span>Calcul de l'itinéraire en cours…</span>
+      </div>
+
       <!-- Carte -->
       <div id="detail-map"></div>
 
@@ -744,10 +773,10 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <div class="legend-item">
           <div class="legend-dot" style="background:#00D4E8;border-radius:0;height:3px;width:20px;"></div>
-          Itinéraire estimé
+          Itinéraire routier
         </div>
         <div style="margin-left:auto;font-size:.68rem;color:var(--grey);">
-          <i class="fas fa-info-circle"></i> Itinéraire à vol d'oiseau — basé sur les coordonnées GPS enregistrées
+          <i class="fas fa-info-circle"></i> Itinéraire via OpenStreetMap / OSRM
         </div>
       </div>
 
@@ -766,11 +795,9 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
     btn.addEventListener('click', function () {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       this.classList.add('active');
-
       const filter = this.dataset.filter;
       document.querySelectorAll('.delivery-card').forEach(card => {
-        const show = filter === 'all' || card.dataset.statut === filter;
-        card.style.display = show ? '' : 'none';
+        card.style.display = (filter === 'all' || card.dataset.statut === filter) ? '' : 'none';
       });
     });
   });
@@ -778,8 +805,8 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
   /* ─────────────────────────────────────────
      CARTE LEAFLET (modale détail)
   ───────────────────────────────────────── */
-  let detailMap    = null;
-  let mapLayers    = [];   // couches à nettoyer entre deux ouvertures
+  let detailMap = null;
+  let mapLayers = [];
 
   /* Icônes SVG personnalisées */
   function makeIcon(color, label) {
@@ -803,9 +830,7 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
   const iconPickup  = makeIcon('#10B981', 'A');
   const iconDropoff = makeIcon('#EF4444', 'B');
 
-  /**
-   * Parse "lat,lng" → [lat, lng] ou null si invalide
-   */
+  /* Parse "lat,lng" → [lat, lng] ou null */
   function parseCoords(str) {
     if (!str) return null;
     const parts = str.trim().split(',');
@@ -816,6 +841,35 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
     return [lat, lng];
   }
 
+  /* ─────────────────────────────────────────
+     FALLBACK : ligne droite en pointillés
+  ───────────────────────────────────────── */
+  function tracerLigneDroite(pickupCoords, dropoffCoords, dataset) {
+    const line = L.polyline([pickupCoords, dropoffCoords], {
+      color    : '#00D4E8',
+      weight   : 3,
+      opacity  : 0.85,
+      dashArray: '10, 6'
+    }).addTo(detailMap);
+    mapLayers.push(line);
+
+    const midLat = (pickupCoords[0] + dropoffCoords[0]) / 2;
+    const midLng = (pickupCoords[1] + dropoffCoords[1]) / 2;
+    const midMarker = L.circleMarker([midLat, midLng], {
+      radius: 6, fillColor: '#00D4E8', color: '#fff', weight: 2, fillOpacity: 1
+    }).bindTooltip(
+      `<b>Distance estimée</b><br>${parseFloat(dataset.distance || 0).toFixed(2)} km`,
+      { permanent: false, direction: 'top' }
+    ).addTo(detailMap);
+    mapLayers.push(midMarker);
+
+    detailMap.fitBounds([pickupCoords, dropoffCoords], { padding: [50, 50], animate: true });
+    document.getElementById('routeLoader').classList.remove('active');
+  }
+
+  /* ─────────────────────────────────────────
+     OUVERTURE MODALE + TRACÉ OSRM
+  ───────────────────────────────────────── */
   function openMapDetail(card) {
     const dataset = card.dataset;
 
@@ -834,7 +888,7 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
     // Ouvrir la modale
     document.getElementById('mapDetailModal').classList.add('active');
 
-    // Initialiser la carte (une seule fois)
+    // Initialiser la carte une seule fois
     if (!detailMap) {
       detailMap = L.map('detail-map', {
         center : [5.5, 12.3],
@@ -852,18 +906,16 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
     mapLayers.forEach(l => detailMap.removeLayer(l));
     mapLayers = [];
 
-    // Parser les coordonnées
     const pickupCoords  = parseCoords(dataset.pickup);
     const dropoffCoords = parseCoords(dataset.dropoff);
 
     if (!pickupCoords && !dropoffCoords) {
-      // Aucune coordonnée disponible
       detailMap.setView([5.5, 12.3], 6);
-      const noDataMsg = L.popup({ closeButton: false })
+      const noData = L.popup({ closeButton: false })
         .setLatLng([5.5, 12.3])
-        .setContent('<div style="color:#EF4444;font-weight:bold;">Coordonnées GPS non disponibles pour cette livraison.</div>')
+        .setContent('<div style="color:#EF4444;font-weight:bold;">Coordonnées GPS non disponibles.</div>')
         .openOn(detailMap);
-      mapLayers.push(noDataMsg);
+      mapLayers.push(noData);
       setTimeout(() => detailMap.invalidateSize(), 150);
       return;
     }
@@ -888,53 +940,86 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
       bounds.push(dropoffCoords);
     }
 
-    // Ligne d'itinéraire (vol d'oiseau) entre les deux points
-    if (pickupCoords && dropoffCoords) {
-      // Ligne principale cyan
-      const line = L.polyline([pickupCoords, dropoffCoords], {
-        color    : '#00D4E8',
-        weight   : 3,
-        opacity  : 0.85,
-        dashArray: '10, 6'
-      }).addTo(detailMap);
-      mapLayers.push(line);
-
-      // Ombre de la ligne (effet de profondeur)
-      const lineShadow = L.polyline([pickupCoords, dropoffCoords], {
-        color  : 'rgba(0,0,0,.4)',
-        weight : 5,
-        opacity: 0.5,
-        interactive: false
-      });
-      lineShadow.addTo(detailMap);
-      lineShadow.bringToBack();
-      mapLayers.push(lineShadow);
-
-      // Flèche décorative au milieu de la ligne
-      const midLat = (pickupCoords[0] + dropoffCoords[0]) / 2;
-      const midLng = (pickupCoords[1] + dropoffCoords[1]) / 2;
-      const midMarker = L.circleMarker([midLat, midLng], {
-        radius      : 6,
-        fillColor   : '#00D4E8',
-        color       : '#fff',
-        weight      : 2,
-        fillOpacity : 1
-      }).bindTooltip(
-        `<b>Distance estimée</b><br>${parseFloat(dataset.distance || 0).toFixed(2)} km`,
-        { permanent: false, direction: 'top' }
-      ).addTo(detailMap);
-      mapLayers.push(midMarker);
-    }
-
-    // Ajuster le zoom pour voir les deux points
+    // Vue provisoire sur les marqueurs pendant le chargement OSRM
     if (bounds.length === 2) {
-      detailMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 14, animate: true });
+      detailMap.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
     } else if (bounds.length === 1) {
       detailMap.setView(bounds[0], 13);
     }
 
-    // Important : recalculer la taille après que la modale est visible
     setTimeout(() => detailMap.invalidateSize(), 200);
+
+    // ── Itinéraire OSRM (vraies routes) ──────────────────────────────
+    if (pickupCoords && dropoffCoords) {
+
+      // Afficher le loader
+      document.getElementById('routeLoader').classList.add('active');
+
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/`
+        + `${pickupCoords[1]},${pickupCoords[0]};`
+        + `${dropoffCoords[1]},${dropoffCoords[0]}`
+        + `?overview=full&geometries=geojson`;
+
+      fetch(osrmUrl)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('routeLoader').classList.remove('active');
+
+          if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+
+            // Convertir les coordonnées GeoJSON [lng, lat] → Leaflet [lat, lng]
+            const routeCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+
+            // Ombre sous la route
+            const lineShadow = L.polyline(routeCoords, {
+              color      : 'rgba(0,0,0,.45)',
+              weight     : 7,
+              opacity    : 0.4,
+              lineJoin   : 'round',
+              lineCap    : 'round',
+              interactive: false
+            }).addTo(detailMap);
+            lineShadow.bringToBack();
+            mapLayers.push(lineShadow);
+
+            // Route principale cyan
+            const line = L.polyline(routeCoords, {
+              color   : '#00D4E8',
+              weight  : 4,
+              opacity : 0.95,
+              lineJoin: 'round',
+              lineCap : 'round'
+            }).addTo(detailMap);
+            mapLayers.push(line);
+
+            // Point milieu avec distance réelle OSRM
+            const mid = Math.floor(routeCoords.length / 2);
+            const distanceKm = (data.routes[0].distance / 1000).toFixed(2);
+            const midMarker = L.circleMarker(routeCoords[mid], {
+              radius     : 7,
+              fillColor  : '#00D4E8',
+              color      : '#fff',
+              weight     : 2,
+              fillOpacity: 1
+            }).bindTooltip(
+              `<b>Distance réelle</b><br>${distanceKm} km`,
+              { permanent: false, direction: 'top' }
+            ).addTo(detailMap);
+            mapLayers.push(midMarker);
+
+            // Ajuster la vue sur la route entière
+            detailMap.fitBounds(line.getBounds(), { padding: [50, 50], animate: true });
+
+          } else {
+            // OSRM a répondu mais sans route (zone non couverte) → fallback
+            tracerLigneDroite(pickupCoords, dropoffCoords, dataset);
+          }
+        })
+        .catch(() => {
+          // Erreur réseau → fallback ligne droite
+          tracerLigneDroite(pickupCoords, dropoffCoords, dataset);
+        });
+    }
   }
 
   function closeMapDetail() {
@@ -944,17 +1029,14 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
   /* ─────────────────────────────────────────
      ÉVÉNEMENTS GLOBAUX
   ───────────────────────────────────────── */
-  // Fermer modale en cliquant sur le fond
   document.getElementById('mapDetailModal').addEventListener('click', function(e) {
     if (e.target === this) closeMapDetail();
   });
 
-  // Touche Échap
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeMapDetail();
   });
 
-  // Menu hamburger
   const menuToggle = document.getElementById('menuToggle');
   const navLinks   = document.getElementById('navLinks');
   menuToggle?.addEventListener('click', () => {
@@ -962,7 +1044,6 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
     navLinks.classList.toggle('active');
   });
 
-  // Déconnexion
   document.getElementById('logoutBtn')?.addEventListener('click', () => {
     if (confirm('Voulez-vous vous déconnecter ?')) {
       window.location.href = 'logout.php';

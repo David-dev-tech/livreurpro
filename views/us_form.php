@@ -1,19 +1,20 @@
 <?php
+session_start();
 require_once '../config/config.php';
 
-// Démarrer la session
-session_start();
+if (!empty($_SESSION['id_user']) && !empty($_SESSION['mail'])) {
 
-// Vérifier si la session existe et contient des données
-if (isset($_SESSION['id_user']) && !empty($_SESSION['id_user']) && 
-    isset($_SESSION['mail']) && !empty($_SESSION['mail'])) {
-    // Session active avec des données - ouvrir le catalogue
-    header('Location: ../views/us_catalogue.php');
-    exit;
+    if (basename($_SERVER['PHP_SELF']) !== 'us_catalogue.php') {
+        header('Location: ../views/us_catalogue.php');
+        exit;
+    }
+
 } else {
-    // Session vide ou inexistante - ouvrir le formulaire
-    header('Location: ../views/us_form.php');
-    exit;
+
+    if (basename($_SERVER['PHP_SELF']) !== 'us_form.php') {
+        header('Location: ../views/us_form.php');
+        exit;
+    }
 }
 ?>
 <!DOCTYPE html>
