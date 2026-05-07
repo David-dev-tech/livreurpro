@@ -96,19 +96,6 @@
             font-size: 0.9rem;
         }
 
-        .logout-btn {
-            background: none;
-            border: none;
-            color: var(--grey);
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: color 0.3s;
-        }
-
-        .logout-btn:hover {
-            color: var(--cyan);
-        }
-
         /* Main Content */
         .main {
             padding: 20px 0 40px;
@@ -570,7 +557,6 @@
                 <div class="user-info">
                     <i class="fas fa-motorcycle"></i>
                     <span>Jean Dupont</span>
-                    <button class="logout-btn" onclick="showNotification('Déconnexion...', 'success')"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
         </div>

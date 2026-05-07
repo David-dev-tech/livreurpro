@@ -528,11 +528,11 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <a href="us_catalogue.php">Catalogue</a>
           <a href="us_profil.php">Profil</a>
           <a href="mes_livraisons.php" class="active">Mes Commandes</a>
-          <a href="contact.php">Contact</a>
+          <a href="us_contact.php">Contact</a>
           <div class="user-info">
             <i class="fas fa-user-circle"></i>
             <span><?php echo htmlspecialchars($_SESSION['mail'] ?? 'Utilisateur'); ?></span>
-            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+            
           </div>
         </div>
       </div>
@@ -1042,12 +1042,6 @@ $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
   menuToggle?.addEventListener('click', () => {
     menuToggle.classList.toggle('active');
     navLinks.classList.toggle('active');
-  });
-
-  document.getElementById('logoutBtn')?.addEventListener('click', () => {
-    if (confirm('Voulez-vous vous déconnecter ?')) {
-      window.location.href = 'logout.php';
-    }
   });
   </script>
 

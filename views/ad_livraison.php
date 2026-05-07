@@ -31,7 +31,6 @@
                     <div class="user-info">
                         <i class="fas fa-user-shield"></i>
                         <span>Admin</span>
-                        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
                     </div>
                 </div>
             </div>
@@ -143,12 +142,6 @@
         function addItem() {
             alert('Fonction à implémenter');
             closeAddModal();
-        }
-
-        function logout() {
-            if (confirm('Voulez-vous vous déconnecter ?')) {
-                window.location.href = 'index.html';
-            }
         }
     </script>
 </body>

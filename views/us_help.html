@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Aide — LivreurPro</title>
+  <title>Guide d'utilisation — LivreurPro</title>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,700;0,900;1,900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,6 +19,8 @@
       --white:       #F2F4F7;
       --grey:        #6B7280;
       --grey-light:  #9CA3AF;
+      --success:     #10B981;
+      --warning:     #F59E0B;
     }
 
     html, body { height: 100%; }
@@ -30,13 +33,17 @@
 
     a { text-decoration: none; color: inherit; }
 
-    /* ── HEADER / NAV ── */
+    /* ── HEADER ── */
     .top-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 2rem 3.5rem;
+      padding: 1.4rem 3.5rem;
       border-bottom: 1px solid var(--anthracite3);
+      position: sticky;
+      top: 0;
+      background: var(--anthracite);
+      z-index: 100;
     }
 
     .logo {
@@ -64,28 +71,19 @@
       border: 1px solid var(--cyan-border);
       cursor: pointer;
       clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
-      transition: background .2s, color .2s, border-color .2s;
+      transition: background .2s, color .2s;
+      text-decoration: none;
     }
     .btn-back:hover {
       background: var(--cyan);
       color: var(--anthracite);
-      border-color: var(--cyan);
-    }
-    .btn-back svg {
-      width: 16px;
-      height: 16px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 2.2;
     }
 
-    /* ── PAGE CONTENT ── */
+    /* ── CONTENU ── */
     .page-content {
-      max-width: 900px;
+      max-width: 860px;
       margin: 0 auto;
-      padding: 3.5rem 3.5rem 4rem;
-      overflow-y: auto;
-      max-height: calc(100vh - 88px);
+      padding: 3rem 3.5rem 5rem;
     }
 
     /* eyebrow */
@@ -95,10 +93,7 @@
       gap: 1rem;
       margin-bottom: 1.2rem;
     }
-    .eyebrow-line {
-      width: 32px; height: 1.5px;
-      background: var(--cyan);
-    }
+    .eyebrow-line { width: 32px; height: 1.5px; background: var(--cyan); }
     .eyebrow-text {
       font-size: .75rem;
       letter-spacing: .22em;
@@ -107,12 +102,11 @@
       font-weight: 500;
     }
 
-    /* title */
     h1 {
       font-family: 'Barlow Condensed', sans-serif;
       font-weight: 900;
       font-style: italic;
-      font-size: clamp(2.8rem, 5vw, 4.2rem);
+      font-size: clamp(2.6rem, 5vw, 4rem);
       line-height: .95;
       letter-spacing: -.01em;
       text-transform: uppercase;
@@ -135,8 +129,28 @@
       padding-left: 1rem;
     }
 
+    /* ── SECTION TITRE ── */
+    .section-heading {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin: 2.8rem 0 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+    }
+    .section-heading::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--anthracite3);
+    }
+
     /* ── STEPS ── */
-    .steps { display: flex; flex-direction: column; gap: 2rem; }
+    .steps { display: flex; flex-direction: column; gap: 1.2rem; }
 
     .step {
       display: flex;
@@ -144,7 +158,7 @@
       align-items: flex-start;
       background: var(--anthracite2);
       border: 1px solid var(--anthracite3);
-      padding: 1.8rem 2rem;
+      padding: 1.6rem 1.8rem;
       position: relative;
       transition: border-color .25s;
     }
@@ -152,7 +166,7 @@
 
     .step-num {
       flex-shrink: 0;
-      width: 48px; height: 48px;
+      width: 46px; height: 46px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -160,34 +174,106 @@
       border: 1px solid var(--cyan-border);
       font-family: 'Barlow Condensed', sans-serif;
       font-weight: 900;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       color: var(--cyan);
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    }
+
+    .step-icon {
+      flex-shrink: 0;
+      width: 46px; height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--cyan-dim);
+      border: 1px solid var(--cyan-border);
+      color: var(--cyan);
+      font-size: 1.1rem;
       clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
     }
 
     .step-body h3 {
       font-family: 'Barlow Condensed', sans-serif;
       font-weight: 700;
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       letter-spacing: .08em;
       text-transform: uppercase;
       color: var(--white);
-      margin-bottom: .45rem;
+      margin-bottom: .4rem;
     }
     .step-body p {
-      font-size: .92rem;
+      font-size: .9rem;
       line-height: 1.7;
       color: var(--grey-light);
       font-weight: 300;
     }
-    .step-body p strong {
-      color: var(--cyan);
+    .step-body p strong { color: var(--cyan); font-weight: 500; }
+    .step-body a { color: var(--cyan); text-decoration: underline; text-underline-offset: 3px; }
+
+    /* ── TIPS ── */
+    .tips { display: flex; flex-direction: column; gap: 1rem; }
+
+    .tip {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 1.1rem 1.4rem;
+      background: var(--anthracite2);
+      border-left: 3px solid var(--warning);
+    }
+    .tip.tip-success { border-left-color: var(--success); }
+    .tip.tip-cyan    { border-left-color: var(--cyan); }
+
+    .tip i { color: var(--warning); font-size: 1rem; margin-top: .15rem; flex-shrink: 0; }
+    .tip.tip-success i { color: var(--success); }
+    .tip.tip-cyan    i { color: var(--cyan); }
+
+    .tip p { font-size: .88rem; line-height: 1.65; color: var(--grey-light); }
+    .tip p strong { color: var(--white); font-weight: 500; }
+
+    /* ── FAQ ── */
+    .faq { display: flex; flex-direction: column; gap: .8rem; }
+
+    .faq-item {
+      background: var(--anthracite2);
+      border: 1px solid var(--anthracite3);
+      overflow: hidden;
+      transition: border-color .25s;
+    }
+    .faq-item:hover { border-color: var(--cyan-border); }
+
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 1rem 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      cursor: pointer;
+      text-align: left;
+      color: var(--white);
+      font-family: 'Barlow', sans-serif;
+      font-size: .92rem;
       font-weight: 500;
     }
+    .faq-question i { color: var(--cyan); font-size: .8rem; transition: transform .25s; flex-shrink: 0; }
+    .faq-item.open .faq-question i { transform: rotate(180deg); }
 
-    /* ── FOOTER NOTE ── */
+    .faq-answer {
+      display: none;
+      padding: 0 1.4rem 1rem;
+      font-size: .88rem;
+      line-height: 1.7;
+      color: var(--grey-light);
+      border-top: 1px solid var(--anthracite3);
+    }
+    .faq-item.open .faq-answer { display: block; }
+
+    /* ── FOOTER ── */
     .footer-note {
-      margin-top: 3rem;
+      margin-top: 3.5rem;
       padding-top: 2rem;
       border-top: 1px solid var(--anthracite3);
       text-align: center;
@@ -195,18 +281,17 @@
       color: var(--grey);
       letter-spacing: .06em;
     }
-    .footer-note a {
-      color: var(--cyan);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
+    .footer-note a { color: var(--cyan); text-decoration: underline; text-underline-offset: 3px; }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 860px) {
-      .top-bar { padding: 1.5rem 1.5rem; }
-      .page-content { padding: 2rem 1.5rem; max-height: none; }
-      .step { flex-direction: column; gap: 1rem; }
-      h1 { font-size: 2.4rem; }
+      .top-bar { padding: 1.2rem 1.5rem; }
+      .page-content { padding: 2rem 1.5rem 4rem; }
+      .step { flex-direction: column; gap: .9rem; }
+      h1 { font-size: 2.2rem; }
+    }
+    @media (max-width: 480px) {
+      .top-bar { flex-direction: column; align-items: flex-start; gap: .8rem; }
     }
   </style>
 </head>
@@ -215,13 +300,12 @@
   <!-- ═══ TOP BAR ═══ -->
   <header class="top-bar">
     <div class="logo">Livreur<span class="logo-dot">.</span>Pro</div>
-    <a href="../index.html" style="position:fixed;top:20px;right:24px;z-index:9999;display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#007A8A,#005566);color:#ffffff;text-decoration:none;font-family:'Barlow',sans-serif;font-weight:700;font-size:0.85rem;text-transform:uppercase;letter-spacing:1.5px;padding:11px 22px;border-radius:50px;box-shadow:0 4px 20px rgba(0,122,138,0.4);transition:transform 0.25s,box-shadow 0.25s;" onmouseover="this.style.transform='translateY(-3px) scale(1.04)';this.style.boxShadow='0 10px 30px rgba(0,122,138,0.55)'" onmouseout="this.style.transform='translateY(0) scale(1)';this.style.boxShadow='0 4px 20px rgba(0,122,138,0.4)'">
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-  Acceuil
-</a>
+    <a href="../index.html" class="btn-back">
+      <i class="fas fa-arrow-left"></i> Accueil
+    </a>
   </header>
 
-  <!-- ═══ MAIN CONTENT ═══ -->
+  <!-- ═══ CONTENU ═══ -->
   <main class="page-content">
 
     <div class="eyebrow">
@@ -229,62 +313,383 @@
       <span class="eyebrow-text">Centre d'aide</span>
     </div>
 
-    <h1>Comment utiliser <span class="outline">LivreurPro</span></h1>
+    <h1>Guide <span class="outline">Utilisateur</span></h1>
 
     <p class="page-desc">
-      Bienvenue sur LivreurPro&nbsp;! Suivez ces étapes simples pour profiter pleinement de notre service de livraison rapide, fiable et sécurisé.
+      Bienvenue sur LivreurPro&nbsp;! Ce guide vous explique comment créer votre compte,
+      commander une livraison, choisir votre livreur et suivre vos colis en temps réel.
     </p>
 
-    <!-- ── STEPS ── -->
-    <section class="steps">
+
+    <!-- ════════════════════════════════════════
+         SECTION 1 — CRÉER SON COMPTE
+    ════════════════════════════════════════ -->
+    <div class="section-heading">
+      <i class="fas fa-user-plus"></i> Créer son compte &amp; se connecter
+    </div>
+
+    <div class="steps">
 
       <div class="step">
         <div class="step-num">01</div>
         <div class="step-body">
-          <h3>Créez votre compte</h3>
-          <p>Rendez-vous sur la page d'<a href="form_inscription.php" style="color:var(--cyan);text-decoration:underline;text-underline-offset:3px;">inscription</a> et remplissez le formulaire avec vos informations personnelles. En quelques clics, votre compte est prêt à être utilisé.</p>
+          <h3>Accéder au formulaire</h3>
+          <p>
+            Depuis la page d'accueil, cliquez sur le bouton <strong>« Démarrer »</strong>.
+            Vous arrivez sur la page d'inscription / connexion.
+          </p>
         </div>
       </div>
 
       <div class="step">
         <div class="step-num">02</div>
         <div class="step-body">
-          <h3>Consultez le catalogue</h3>
-          <p>Parcourez notre <a href="catalogue.php" style="color:var(--cyan);text-decoration:underline;text-underline-offset:3px;">catalogue</a> pour découvrir les services disponibles, comparer les options et choisir celle qui correspond le mieux à vos besoins.</p>
+          <h3>Entrer votre adresse email</h3>
+          <p>
+            Saisissez votre adresse email. Si c'est votre première visite, un compte est créé
+            automatiquement. Si vous avez déjà un compte, vous serez reconnecté.
+            Dans les deux cas, un <strong>code d'accès</strong> vous est envoyé par email.
+          </p>
         </div>
       </div>
 
       <div class="step">
         <div class="step-num">03</div>
         <div class="step-body">
-          <h3>Gérez votre profil</h3>
-          <p>Une fois inscrit, accédez à votre <a href="us_profil.php" style="color:var(--cyan);text-decoration:underline;text-underline-offset:3px;">espace profil</a> pour suivre vos livraisons, mettre à jour vos coordonnées et gérer vos préférences.</p>
+          <h3>Saisir votre code d'accès (OTP)</h3>
+          <p>
+            Ouvrez votre boîte mail et copiez le code reçu de LivreurPro.
+            Collez-le dans le champ de vérification, puis validez.
+            <strong>Ce code est votre identifiant personnel</strong> — conservez-le.
+          </p>
         </div>
       </div>
 
       <div class="step">
         <div class="step-num">04</div>
         <div class="step-body">
-          <h3>Suivez vos livraisons</h3>
-          <p>Depuis votre tableau de bord, suivez en temps réel l'état de chaque livraison. Vous recevez des notifications à chaque étape pour rester informé.</p>
+          <h3>Vous êtes connecté !</h3>
+          <p>
+            Vous arrivez directement sur le <a href="us_catalogue.php">catalogue des livreurs</a>.
+            Votre session reste active tant que vous ne fermez pas votre navigateur.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         SECTION 2 — COMMANDER UNE LIVRAISON
+    ════════════════════════════════════════ -->
+    <div class="section-heading">
+      <i class="fas fa-box"></i> Commander une livraison
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h3>Parcourir le catalogue</h3>
+          <p>
+            Rendez-vous sur la page <a href="us_catalogue.php">Catalogue</a>.
+            Vous y trouvez tous les livreurs disponibles avec leur type de véhicule,
+            leur capacité de charge et leur note moyenne.
+            Utilisez les <strong>filtres</strong> (type de véhicule, poids minimum)
+            pour affiner votre recherche.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h3>Choisir un livreur</h3>
+          <p>
+            Cliquez sur <strong>« Sélectionner ce livreur »</strong> sur la carte du livreur
+            qui vous convient. Un formulaire de livraison s'ouvre.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h3>Définir les adresses sur la carte</h3>
+          <p>
+            Cliquez sur <strong>« Carte »</strong> à côté du champ <em>Adresse de ramassage</em>
+            pour ouvrir la carte interactive. Recherchez votre quartier ou cliquez directement
+            sur la carte pour placer le marqueur. Validez le point, puis faites de même
+            pour l'<em>adresse de dépôt</em>.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h3>Renseigner le poids et les instructions</h3>
+          <p>
+            Indiquez le <strong>poids de votre colis</strong> en kg.
+            Le prix est calculé automatiquement selon la distance et le type de véhicule.
+            Ajoutez des instructions spéciales si nécessaire (code porte, fragilité, etc.).
+          </p>
         </div>
       </div>
 
       <div class="step">
         <div class="step-num">05</div>
         <div class="step-body">
-          <h3>Besoin d'aide&nbsp;?</h3>
-          <p>Si vous rencontrez un problème ou avez une question, n'hésitez pas à nous <a href="#" style="color:var(--cyan);text-decoration:underline;text-underline-offset:3px;">contacter</a>. Notre équipe vous répondra dans les plus brefs délais.</p>
+          <h3>Confirmer la livraison</h3>
+          <p>
+            Vérifiez le <strong>prix estimé</strong> affiché, puis cliquez sur
+            <strong>« Confirmer la livraison »</strong>.
+            Le livreur reçoit une notification par email et votre commande apparaît
+            dans <a href="us_livraison.php">Mes Livraisons</a> avec le statut
+            <strong>En attente</strong>.
+          </p>
         </div>
       </div>
 
-    </section>
+    </div>
 
+
+    <!-- ════════════════════════════════════════
+         SECTION 3 — SUIVRE SES LIVRAISONS
+    ════════════════════════════════════════ -->
+    <div class="section-heading">
+      <i class="fas fa-route"></i> Suivre ses livraisons
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-icon"><i class="fas fa-list"></i></div>
+        <div class="step-body">
+          <h3>Accéder à l'historique</h3>
+          <p>
+            Cliquez sur <a href="us_livraison.php"><strong>Mes Livraisons</strong></a> dans le menu.
+            Vous voyez toutes vos commandes avec leur statut, le livreur assigné,
+            le prix et la distance.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-icon"><i class="fas fa-filter"></i></div>
+        <div class="step-body">
+          <h3>Filtrer par statut</h3>
+          <p>
+            Utilisez les boutons de filtre pour afficher uniquement les livraisons
+            <strong>En attente</strong>, <strong>En cours</strong>, <strong>Terminées</strong>
+            ou <strong>Annulées</strong>.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-icon"><i class="fas fa-map-marked-alt"></i></div>
+        <div class="step-body">
+          <h3>Voir l'itinéraire sur la carte</h3>
+          <p>
+            Sur chaque carte de livraison, cliquez sur
+            <strong>« Voir l'itinéraire sur la carte »</strong>.
+            Une carte Leaflet s'ouvre avec le point de ramassage (vert),
+            le point de dépôt (rouge) et l'itinéraire routier calculé via OpenStreetMap.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Statuts expliqués -->
+    <div class="tips" style="margin-top: 1.2rem;">
+      <div class="tip tip-cyan">
+        <i class="fas fa-info-circle"></i>
+        <p><strong>⏳ En attente</strong> — Votre commande a été enregistrée. Le livreur n'a pas encore accepté.</p>
+      </div>
+      <div class="tip tip-cyan">
+        <i class="fas fa-info-circle"></i>
+        <p><strong>✅ Acceptée</strong> — Le livreur a accepté votre commande et se prépare.</p>
+      </div>
+      <div class="tip tip-cyan">
+        <i class="fas fa-info-circle"></i>
+        <p><strong>🚚 En cours</strong> — Le livreur est en route vers vous ou vers le destinataire.</p>
+      </div>
+      <div class="tip tip-success">
+        <i class="fas fa-check-circle"></i>
+        <p><strong>🎉 Terminée</strong> — La livraison a été effectuée avec succès. Réglez le livreur directement.</p>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         SECTION 4 — GÉRER SON PROFIL
+    ════════════════════════════════════════ -->
+    <div class="section-heading">
+      <i class="fas fa-user-cog"></i> Gérer son profil
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-icon"><i class="fas fa-pen"></i></div>
+        <div class="step-body">
+          <h3>Modifier son nom</h3>
+          <p>
+            Accédez à <a href="us_profil.php"><strong>Mon Profil</strong></a> depuis le menu.
+            Cliquez sur <strong>« Modifier »</strong>, saisissez votre nom, puis
+            <strong>« Enregistrer »</strong>.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-icon"><i class="fas fa-trash-alt"></i></div>
+        <div class="step-body">
+          <h3>Supprimer son compte</h3>
+          <p>
+            En bas de la page Profil, cliquez sur <strong>« Supprimer mon compte »</strong>.
+            Une confirmation vous sera demandée. <strong>Cette action est irréversible</strong>
+            et supprime toutes vos données.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         SECTION 5 — CONSEILS ET BONNES PRATIQUES
+    ════════════════════════════════════════ -->
+    <div class="section-heading">
+      <i class="fas fa-lightbulb"></i> Conseils pratiques
+    </div>
+
+    <div class="tips">
+      <div class="tip tip-success">
+        <i class="fas fa-check-circle"></i>
+        <p><strong>Choisissez le bon véhicule :</strong> pour un petit colis léger, une moto est plus rapide et moins chère. Pour des marchandises lourdes ou volumineuses, optez pour une camionnette ou un camion.</p>
+      </div>
+      <div class="tip tip-success">
+        <i class="fas fa-check-circle"></i>
+        <p><strong>Précisez bien les adresses :</strong> utilisez la carte pour placer le marqueur exactement à l'endroit souhaité. Ajoutez des instructions (numéro de porte, étage, point de repère) dans le champ prévu.</p>
+      </div>
+      <div class="tip">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p><strong>Paiement à la livraison :</strong> vous réglez directement le livreur en espèces à la réception de votre colis. Aucun paiement en ligne n'est requis.</p>
+      </div>
+      <div class="tip">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p><strong>Conservez votre code d'accès :</strong> il vous est envoyé par email à chaque connexion. Si vous ne le retrouvez plus, recommencez simplement le processus de connexion avec votre email.</p>
+      </div>
+      <div class="tip tip-cyan">
+        <i class="fas fa-star"></i>
+        <p><strong>Notez votre livreur :</strong> après chaque livraison terminée, votre avis aide la communauté à choisir les meilleurs livreurs.</p>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         SECTION 6 — FAQ
+    ════════════════════════════════════════ -->
+    <div class="section-heading">
+      <i class="fas fa-question-circle"></i> Questions fréquentes
+    </div>
+
+    <div class="faq">
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Je n'ai pas reçu mon code d'accès par email, que faire ?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          Vérifiez votre dossier <strong>Spam / Courrier indésirable</strong>. Si le mail n'y est pas,
+          retournez sur la page de connexion et soumettez à nouveau votre adresse email pour recevoir
+          un nouveau code.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Puis-je annuler une livraison après l'avoir confirmée ?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          Tant que la livraison est au statut <strong>En attente</strong>, contactez directement
+          le livreur via son numéro de téléphone visible dans votre historique de livraisons.
+          Une fois la livraison acceptée ou en cours, l'annulation doit être convenue avec le livreur.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Comment est calculé le prix de ma livraison ?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          Le prix est calculé automatiquement selon la <strong>distance</strong> entre le point de
+          ramassage et le point de dépôt, multipliée par le tarif du véhicule choisi :
+          300 FCFA/km (moto), 400 FCFA/km (tricycle), 500 FCFA/km (camionnette), 700 FCFA/km (camion).
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          La carte ne s'affiche pas correctement, que faire ?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          Assurez-vous d'avoir une connexion internet active. Rechargez la page.
+          Si le problème persiste, essayez un autre navigateur (Chrome ou Firefox recommandés).
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Comment contacter un livreur directement ?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          Le numéro de téléphone du livreur est affiché sur sa carte dans le catalogue
+          et dans le détail de votre livraison dans <strong>Mes Livraisons</strong>.
+          Vous pouvez l'appeler directement.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          LivreurPro est-il disponible en dehors de Douala ?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          Pour l'instant, LivreurPro opère principalement à <strong>Douala</strong>.
+          L'extension à d'autres villes du Cameroun est prévue prochainement.
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ── FOOTER ── -->
     <div class="footer-note">
-      LivreurPro &mdash; La fiabilité à chaque km. <a href="../index.html">Retour à l'accueil</a>
+      LivreurPro &mdash; La fiabilité à chaque km &nbsp;|&nbsp;
+      <a href="../index.html">Retour à l'accueil</a>
     </div>
 
   </main>
+
+  <script>
+    function toggleFaq(btn) {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      // Fermer tous les autres
+      document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+  </script>
 
 </body>
 </html>

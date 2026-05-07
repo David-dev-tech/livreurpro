@@ -47,7 +47,6 @@ $livreurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="user-info">
                         <i class="fas fa-user-shield"></i>
                         <span>Admin</span>
-                        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
                     </div>
                 </div>
             </div>
@@ -111,6 +110,18 @@ $livreurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <label>Adresse</label>
                         <textarea name="adresse" rows="3" placeholder="Adresse complète du livreur"></textarea>
                     </div>
+                    <div class="form-group">
+        <label>Type de véhicule <span class="required">*</span></label>
+        <select name="type_vehicule" required>
+            <option value="">Sélectionnez le type de véhicule</option>
+            <option value="Moto">Moto</option>
+            <option value="tricycle">Tricycle</option>
+            <option value="camionnette">Camionnette</option>
+
+            <option value="camion">Camion</option>
+
+        </select>
+    </div>
 
                     <div class="form-row">
                         <div class="form-group">
@@ -183,9 +194,6 @@ $livreurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             document.getElementById('navLinks').classList.toggle('active');
             document.getElementById('menuOverlay').classList.toggle('active');
         });
-        function logout() {
-            if(confirm('Se déconnecter ?')) window.location.href = '../logout.php';
-        }
     </script>
 </body>
 </html>

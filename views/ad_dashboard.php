@@ -31,7 +31,6 @@
                     <div class="user-info">
                         <i class="fas fa-user-shield"></i>
                         <span>Admin</span>
-                        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
                     </div>
                 </div>
             </div>

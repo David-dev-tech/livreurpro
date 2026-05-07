@@ -1,405 +1,308 @@
-╔══════════════════════════════════════════════════════════════════╗
-║              LIVREURPRO — DOCUMENTATION DÉVELOPPEUR              ║
-║                         Version 2.0                              ║
-╚══════════════════════════════════════════════════════════════════╝
+================================================================
+  LIVREURPRO — DOCUMENTATION TECHNIQUE
+  Pour les développeurs
+  Dernière mise à jour : Mai 2026
+================================================================
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+URL de déploiement : https://codolo.gamer.gd/
+
+
+----------------------------------------------------------------
 1. PRÉSENTATION DU PROJET
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-LivreurPro est une plateforme web de mise en relation entre des
-clients (utilisateurs) et des livreurs professionnels au Cameroun.
-
-Zones couvertes : Douala, Yaoundé, Garoua (extensible)
-
-Rôles dans le système :
-  - Utilisateur  : s'inscrit, choisit un livreur, crée une livraison
-  - Livreur      : inscrit par l'admin, reçoit et exécute les livraisons
-  - Administrateur : gère les livreurs, supervise les livraisons et commissions
-
-Serveur local recommandé : Laragon (PHP 7.4+, MySQL/MariaDB)
-Base de données           : livpro
-Encodage                  : UTF-8 MB4
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-2. ARCHITECTURE DU PROJET (MVC SIMPLIFIÉ)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-livreurpro/
-├── config/
-│   └── config.php              ← Connexion PDO à la base de données
-├── controllers/                ← (réservé aux futurs contrôleurs)
-├── models/
-│   ├── inscrire_user.php       ← Inscription / connexion utilisateur + envoi OTP
-│   ├── inscrire_livreur.php    ← Ajout d'un livreur (admin)
-│   ├── traiter_livraison.php   ← Création d'une livraison (JSON)
-│   ├── verif_otp.php           ← Vérification du code OTP + création session
-│   └── proxy.php               ← Proxy Nominatim (géocodage OpenStreetMap)
-├── views/
-│   ├── us_form.php             ← Formulaire d'inscription / connexion utilisateur
-│   ├── us_otp.php              ← Saisie du code OTP reçu par email
-│   ├── us_catalogue.php        ← Catalogue des livreurs + modale de livraison
-│   ├── us_livraison.php        ← Historique des livraisons de l'utilisateur
-│   ├── us_profil.php           ← Profil utilisateur
-│   ├── us_help.html            ← Guide d'utilisation (page d'aide)
-│   ├── liv_dashboard.php       ← Tableau de bord livreur
-│   ├── liv_livraison.php       ← Livraisons assignées au livreur
-│   ├── liv_compte.php          ← Compte / profil livreur
-│   ├── liv_note.php            ← Notes reçues par le livreur
-│   ├── liv_login.php           ← Connexion livreur
-│   ├── ad_dashboard.php        ← Tableau de bord administrateur
-│   ├── ad_livreur.php          ← Gestion des livreurs (admin)
-│   ├── ad_utilisateur.php      ← Gestion des utilisateurs (admin)
-│   ├── ad_livraison.php        ← Supervision des livraisons (admin)
-│   └── map.php                 ← Carte interactive (Leaflet)
-├── css/
-│   ├── dark/
-│   │   ├── us_css.css          ← Styles interface utilisateur (thème sombre)
-│   │   ├── liv_css.css         ← Styles interface livreur
-│   │   └── ad_css.css          ← Styles interface admin
-│   └── css_index.css           ← Styles page d'accueil
-├── img/                        ← Images et assets graphiques
-├── PHPMailer-master/           ← Bibliothèque PHPMailer (envoi d'emails SMTP)
-├── guide/
-│   ├── bd.txt                  ← Script SQL de création de la base
-│   └── documentation.txt       ← Ce fichier
-├── index.html                  ← Page d'accueil (thème sombre, Three.js)
-└── index2.html                 ← Page d'accueil (thème clair, variante)
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-3. BASE DE DONNÉES — SCHÉMA (livpro)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Le script complet de création est dans guide/bd.txt.
-
-TABLE utilisateur
-  id_user        VARCHAR(20) PK   — identifiant unique généré (ex: id7aB9)
-  mail           VARCHAR(200)     — adresse email (unique, sert de login)
-  nom_utilisateur VARCHAR(100)    — nom optionnel
-  date_creation  DATETIME         — date d'inscription (NOW())
-
-TABLE livreur
-  id_livreur     INT AUTO_INCREMENT PK
-  nom, prenom    VARCHAR(100)
-  age            INT
-  sex            ENUM('M','F')
-  numero         VARCHAR(20) UNIQUE  — numéro de téléphone
-  mail           VARCHAR(100)
-  adresse        TEXT
-  numero_cni     VARCHAR(50) UNIQUE
-  carte_grise    VARCHAR(255)
-  type_vehicule  ENUM('moto','tricycle','camionnette','camion')
-
-TABLE livraison
-  id_livraison      INT AUTO_INCREMENT PK
-  id_user           VARCHAR(20) FK → utilisateur
-  id_livreur        INT FK → livreur (SET NULL si livreur supprimé)
-  adresse_ramassage TEXT            — coordonnées GPS "lat,lng"
-  adresse_depot     TEXT            — coordonnées GPS "lat,lng"
-  distance          DECIMAL(10,2)   — en kilomètres
-  prix              DECIMAL(10,2)   — en FCFA
-  poids             DECIMAL(10,2)   — en kg
-  statut            ENUM('en_attente','acceptee','en_cours','terminee','annulee')
-  type_vehicule     ENUM(...)
-  date_creation     DATETIME
-  date_validation   DATETIME
-
-TABLE note
-  id_note     INT AUTO_INCREMENT PK
-  id_livreur  INT FK → livreur
-  note        INT (1–5)
-  impression  TEXT
-
-TABLE commission
-  id_commission   INT AUTO_INCREMENT PK
-  id_livraison    INT FK → livraison
-  montant         DECIMAL(10,2)   — 10% du prix de la livraison
-  date_validation DATETIME
-
-VUE utilisateur_classe
-  SELECT * FROM utilisateur ORDER BY date_creation DESC
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-4. FLUX DE FONCTIONNEMENT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-── CÔTÉ UTILISATEUR ──────────────────────────────────────────────
-
-  [1] Accueil (index.html / index2.html)
-        ↓ clic "Démarrer"
-  [2] us_form.php
-        → Si session active (id_user + mail) → redirige vers us_catalogue.php
-        → Sinon → affiche le formulaire email
-        ↓ soumission POST → models/inscrire_user.php
-  [3] inscrire_user.php
-        → Vérifie si l'email existe déjà en BD
-          • Oui → récupère l'id_user existant (connexion)
-          • Non → génère un id_user unique (ex: id7aB9) et insère en BD
-        → Envoie un email via PHPMailer (SMTP Gmail) contenant l'id_user
-        → Redirige vers views/us_otp.php
-  [4] us_otp.php
-        → L'utilisateur saisit l'id_user reçu par email
-        ↓ soumission POST → models/verif_otp.php
-  [5] verif_otp.php
-        → Vérifie l'id_user en BD
-        → Crée la session PHP : $_SESSION['id_user'] et $_SESSION['mail']
-        → Redirige vers views/us_catalogue.php
-  [6] us_catalogue.php
-        → Affiche tous les livreurs depuis la BD (avec notes moyennes)
-        → Filtres : type de véhicule, poids minimum
-        → Clic "Sélectionner" → ouvre une modale de livraison
-        → La modale contient :
-            • Récap du livreur
-            • Adresse de ramassage (sélection sur carte Leaflet)
-            • Adresse de dépôt (sélection sur carte Leaflet)
-            • Poids du colis
-            • Calcul automatique du prix (tarif/km selon véhicule)
-        ↓ soumission fetch() → models/traiter_livraison.php
-  [7] traiter_livraison.php
-        → Valide tous les champs (session, adresses, poids, prix, véhicule)
-        → Insère la livraison en BD (statut: en_attente)
-        → Crée la commission (10% du prix)
-        → Retourne JSON { success: true, id_livraison: X }
-  [8] us_livraison.php
-        → Affiche l'historique des livraisons de l'utilisateur
-        → Filtres par statut
-        → Bouton "Voir l'itinéraire" → carte Leaflet avec marqueurs A/B
-
-── CÔTÉ LIVREUR ──────────────────────────────────────────────────
-
-  Les livreurs sont inscrits manuellement par l'administrateur
-  (vérification physique des documents : CNI, carte grise).
-  Interface livreur : liv_dashboard, liv_livraison, liv_compte, liv_note
-
-── CÔTÉ ADMINISTRATEUR ───────────────────────────────────────────
-
-  Accès via ad_dashboard.php (pas d'authentification implémentée à ce stade)
-  Fonctionnalités :
-    • ad_dashboard.php   → statistiques globales + graphiques Chart.js
-    • ad_livreur.php     → liste, ajout (modale), modification, suppression
-    • ad_utilisateur.php → liste des utilisateurs inscrits
-    • ad_livraison.php   → supervision de toutes les livraisons
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-5. DESCRIPTION DÉTAILLÉE DES FICHIERS CLÉS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-config/config.php
-  Définit les constantes DB_HOST, DB_NAME, DB_USER, DB_PASS.
-  Crée l'instance PDO globale $pdo avec :
-    - ERRMODE_EXCEPTION (erreurs SQL visibles)
-    - FETCH_ASSOC par défaut
-    - EMULATE_PREPARES désactivé (requêtes préparées natives)
-  Utilisé via require_once dans tous les fichiers PHP nécessitant la BD.
-
-models/inscrire_user.php
-  Gère à la fois l'inscription (nouvel email) et la connexion (email existant).
-  Génère un id_user de format "id" + 4 caractères alphanumériques aléatoires.
-  Envoie un email HTML stylisé via PHPMailer (SMTP Gmail, port 587, TLS).
-  Le contenu de l'email diffère selon inscription ou connexion.
-  Redirige vers us_otp.php après envoi.
-
-models/verif_otp.php
-  Reçoit l'id_user saisi par l'utilisateur.
-  Vérifie son existence dans la table utilisateur.
-  Crée $_SESSION['id_user'] et $_SESSION['mail'] en cas de succès.
-  Redirige vers us_catalogue.php.
-
-models/traiter_livraison.php
-  Endpoint JSON (fetch POST depuis us_catalogue.php).
-  Utilise ob_start() pour éviter que des warnings PHP corrompent le JSON.
-  Valide : session, id_livreur, adresses, poids > 0, prix > 0, type_vehicule.
-  Vérifie l'existence de l'utilisateur et du livreur en BD avant insertion.
-  Insère la livraison puis crée la commission (10%).
-  Retourne { success: true/false, message: "...", id_livraison: X }.
-
-models/proxy.php
-  Proxy PHP vers l'API Nominatim (OpenStreetMap).
-  Actions supportées : search (recherche de lieu) et reverse (géocodage inverse).
-  Restreint les recherches au Cameroun (countrycodes=cm).
-  Valide les coordonnées GPS dans les limites géographiques du Cameroun.
-  Utilise cURL en priorité, file_get_contents en fallback.
-  Cache HTTP de 5 minutes (Cache-Control: public, max-age=300).
-
-models/inscrire_livreur.php
-  Reçoit les données du formulaire d'ajout livreur (admin).
-  Insère dans la table livreur avec requête préparée nommée.
-  Redirige vers ad_livreur.php en cas de succès.
-  Affiche "Element deja existant" si contrainte UNIQUE violée (numero ou CNI).
-
-views/us_catalogue.php
-  Charge tous les livreurs depuis la BD + leurs notes moyennes (JOIN).
-  Affiche une grille de cartes livreurs filtrables (JS côté client).
-  Modale de livraison avec deux sous-modales carte Leaflet (ramassage / dépôt).
-  Calcul du prix estimé côté client : distance × tarif/km selon véhicule.
-    Tarifs : moto=300, tricycle=400, camionnette=500, camion=700 FCFA/km
-  Soumission via fetch() vers traiter_livraison.php (réponse JSON).
-  Dépend de : css/dark/us_css.css, Leaflet 1.9.4, Font Awesome 6.4.
-
-views/us_livraison.php
-  Récupère les livraisons de l'utilisateur connecté (JOIN avec livreur).
-  Affiche des cartes avec statut coloré, route A→B, méta-données.
-  Filtres JS par statut (en_attente, acceptee, en_cours, terminee, annulee).
-  Modale carte Leaflet pour visualiser l'itinéraire (marqueurs A/B + ligne).
-  Les adresses stockées en BD sont au format "lat,lng" (coordonnées GPS brutes).
-
-views/us_profil.php
-  Interface de profil utilisateur (données statiques pour l'instant).
-  Onglets : Informations, Historique, Paiement.
-  Méthodes de paiement : Orange Money, MTN Mobile Money.
-  À connecter à la BD pour persister les modifications.
-
-views/ad_dashboard.php
-  Tableau de bord admin avec statistiques (Chart.js).
-  Graphiques : évolution des livraisons, répartition par véhicule.
-  Tables : derniers utilisateurs, dernières livraisons.
-  Modale d'ajout d'utilisateur (non connectée à la BD à ce stade).
-
-index.html / index2.html
-  Pages d'accueil (landing pages).
-  index.html  : thème sombre (fond #050508, cyan #00D4E8) + Three.js (particules 3D)
-  index2.html : thème clair (fond #F7F9FC, teal #007A8A) + Three.js (particules légères)
-  Icône soleil (index.html) → lien vers index2.html
-  Icône lune (index2.html) → lien vers index.html
-  Sections : Hero, À propos (4 cartes), Statistiques (compteurs animés), CTA
-  Animations : ScrollReveal, typewriter effect, compteurs IntersectionObserver
-  Responsive : breakpoints 968px et 576px
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-6. TECHNOLOGIES UTILISÉES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Frontend
-  HTML5, CSS3 (variables CSS, Flexbox, Grid, clip-path)
-  JavaScript ES6+ (fetch, IntersectionObserver, modules)
-  Three.js 0.128.0     — animations 3D (particules, formes géométriques)
-  Leaflet 1.9.4        — cartes interactives (sélection GPS, itinéraires)
-  ScrollReveal         — animations d'apparition au scroll
-  Chart.js             — graphiques admin
-  Font Awesome 6.4.0   — icônes
-  Google Fonts         — Barlow Condensed + Barlow
-
-Backend
-  PHP 7.4+
-  PDO + requêtes préparées (protection injection SQL)
-  Sessions PHP (authentification utilisateur)
-  PHPMailer (SMTP Gmail, TLS port 587)
-
-Base de données
-  MySQL / MariaDB
-  Base : livpro
-  5 tables : utilisateur, livreur, livraison, note, commission
-  1 vue    : utilisateur_classe
-
-Géocodage
-  Nominatim (OpenStreetMap) via proxy PHP (models/proxy.php)
-  Restriction géographique : Cameroun uniquement
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-7. CONFIGURATION ET INSTALLATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. Cloner / copier le projet dans le dossier www/ de Laragon.
-
-2. Créer la base de données :
-   Ouvrir HeidiSQL ou phpMyAdmin et exécuter le contenu de guide/bd.txt.
-
-3. Vérifier config/config.php :
-   DB_HOST = 'localhost'
-   DB_NAME = 'livpro'
-   DB_USER = 'root'
-   DB_PASS = ''   (vide par défaut sur Laragon)
-
-4. Configurer PHPMailer (models/inscrire_user.php) :
-   Remplacer Username et Password par vos propres identifiants Gmail.
-   Le mot de passe doit être un "App Password" Google (pas le mot de passe Gmail).
-   Générer un App Password : myaccount.google.com → Sécurité → Mots de passe d'application
-
-5. Accéder au projet :
-   http://localhost/livreurpro/index.html
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-8. POINTS D'ATTENTION ET BONNES PRATIQUES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Sécurité
-  - Toutes les requêtes SQL utilisent des requêtes préparées PDO.
-  - Les sorties HTML utilisent htmlspecialchars() pour éviter les XSS.
-  - Les sessions PHP sont démarrées avec session_start() avant tout output.
-  - Ne jamais committer les credentials SMTP dans un dépôt public.
-
-Sessions
-  - La session est créée dans verif_otp.php après validation de l'OTP.
-  - Les pages protégées vérifient isset($_SESSION['id_user']) en début de fichier.
-  - us_form.php redirige automatiquement vers le catalogue si une session est active.
-
-Adresses GPS
-  - Les adresses sont stockées en BD au format "lat,lng" (ex: "3.848,11.502").
-  - Le proxy Nominatim (models/proxy.php) est requis pour la recherche de lieux.
-  - Le calcul de distance côté client utilise la formule de Haversine.
-
-Tarification
-  - Le prix est calculé côté client (estimation) ET côté serveur (validation).
-  - Tarifs actuels (FCFA/km) : moto=300, tricycle=400, camionnette=500, camion=700
-  - Commission plateforme : 10% du prix, insérée automatiquement dans la table commission.
-
-Emails
-  - PHPMailer est configuré avec verify_peer=false (développement local).
-  - En production, activer la vérification SSL.
-  - L'email est envoyé à l'utilisateur ET en copie à l'adresse admin.
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-9. ÉVOLUTIONS PRÉVUES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Priorité haute
-  [ ] Authentification admin (login sécurisé avec session)
-  [ ] Interface livreur complète (accepter/refuser/terminer une livraison)
-  [ ] Connexion BD pour us_profil.php (persistance des données)
-  [ ] Système de notation après livraison (côté utilisateur)
-
-Priorité moyenne
-  [ ] Suivi en temps réel (WebSocket ou polling)
-  [ ] Notifications email à chaque changement de statut
-  [ ] Paiement Mobile Money (Orange Money, MTN MoMo)
-  [ ] Upload de documents livreur (CNI, carte grise) avec stockage fichier
-
-Priorité basse / futur
-  [ ] Application mobile (React Native ou Flutter)
-  [ ] API REST complète
-  [ ] Intelligence artificielle pour optimisation des trajets
-  [ ] Extension à d'autres villes (Bafoussam, Bamenda, Ngaoundéré)
-  [ ] Module entreprise (comptes multi-utilisateurs, facturation)
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-10. IDENTITÉ VISUELLE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Thème sombre (index.html, interfaces utilisateur/livreur/admin)
-  Fond principal  : #050508 / #1C1F24
-  Fond secondaire : #252930 / #2F343C
-  Accent cyan     : #00D4E8
-  Texte principal : #F2F4F7
-  Texte secondaire: #9CA3AF
-
-Thème clair (index2.html)
-  Fond principal  : #F7F9FC
-  Fond secondaire : #EEF3F9
-  Accent teal     : #007A8A
-  Accent coral    : #E85A30
-  Texte principal : #0F1C2E
-
-Typographie
-  Titres : Barlow Condensed (900, italic, uppercase)
-  Corps  : Barlow (300–700)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+----------------------------------------------------------------
+
+LivreurPro est une plateforme web de mise en relation entre
+utilisateurs et livreurs au Cameroun (Douala). Elle permet à
+un utilisateur de commander une livraison, de choisir un
+livreur dans un catalogue, de suivre ses commandes sur une
+carte interactive, et de payer à la livraison.
+
+Trois types d'acteurs :
+  - Utilisateur  : commande des livraisons
+  - Livreur      : reçoit et effectue les livraisons
+  - Administrateur : gère les utilisateurs, livreurs et livraisons
+
+
+----------------------------------------------------------------
+2. STACK TECHNIQUE
+----------------------------------------------------------------
+
+  - Frontend  : HTML5, CSS3 (variables CSS), JavaScript vanilla
+  - Backend   : PHP 8+ (pas de framework)
+  - Base de données : MySQL (PDO, charset utf8mb4)
+  - Cartes    : Leaflet.js + OpenStreetMap / OSRM (itinéraires)
+  - Emails    : PHPMailer (SMTP Gmail)
+  - Animations 3D : Three.js (page d'accueil)
+  - Icônes    : Font Awesome 6.4
+  - Polices   : Google Fonts (Barlow, Barlow Condensed)
+
+
+----------------------------------------------------------------
+3. STRUCTURE DES DOSSIERS
+----------------------------------------------------------------
+
+  /
+  ├── index.html              Page d'accueil (thème sombre)
+  ├── index2.html             Page d'accueil (thème clair)
+  ├── demo1.html … demo5.html Pages de démonstration / prototypes
+  │
+  ├── config/
+  │   └── config.php          Connexion PDO à la base de données
+  │
+  ├── models/                 Logique métier (traitement des formulaires)
+  │   ├── inscrire_user.php   Inscription / connexion utilisateur (OTP par email)
+  │   ├── inscrire_livreur.php Enregistrement d'un livreur (admin)
+  │   ├── traiter_livraison.php Création d'une livraison + notification email livreur
+  │   ├── verif_otp.php       Vérification du code OTP et création de session
+  │   └── proxy.php           Proxy Nominatim (géocodage, évite les CORS)
+  │
+  ├── views/                  Pages HTML/PHP affichées à l'utilisateur
+  │   ├── us_form.php         Formulaire d'inscription / connexion utilisateur
+  │   ├── us_otp.php          Saisie du code OTP reçu par email
+  │   ├── us_catalogue.php    Catalogue des livreurs + formulaire de livraison
+  │   ├── us_livraison.php    Historique des livraisons de l'utilisateur
+  │   ├── us_profil.php       Profil utilisateur (modifier nom, supprimer compte)
+  │   ├── us_help.html        Guide d'utilisation pour les utilisateurs
+  │   ├── ad_dashboard.php    Tableau de bord administrateur
+  │   ├── ad_utilisateur.php  Gestion des utilisateurs (admin)
+  │   ├── ad_livreur.php      Gestion des livreurs (admin)
+  │   ├── ad_livraison.php    Gestion des livraisons (admin)
+  │   ├── liv_dashboard.php   Tableau de bord livreur
+  │   ├── liv_livraison.php   Liste des livraisons du livreur
+  │   ├── liv_note.php        Notes / évaluations du livreur
+  │   ├── liv_compte.php      Compte du livreur
+  │   ├── liv_login.php       Connexion livreur
+  │   └── map.php             Page carte standalone
+  │
+  ├── css/
+  │   ├── css_index.css       Styles de la page d'accueil
+  │   └── dark/
+  │       ├── us_css.css      Styles communs espace utilisateur (thème sombre)
+  │       ├── ad_css.css      Styles espace administrateur
+  │       └── liv_css.css     Styles espace livreur
+  │
+  ├── img/                    Images statiques (img1.jpg, img2.jpg, img3.jpg)
+  │
+  ├── PHPMailer-master/       Bibliothèque PHPMailer (envoi d'emails SMTP)
+  │   └── src/                Classes PHPMailer, SMTP, Exception, OAuth…
+  │
+  └── guide/
+      ├── documentation.txt   Ce fichier
+      └── bd.txt              Schéma / notes sur la base de données
+
+
+----------------------------------------------------------------
+4. BASE DE DONNÉES
+----------------------------------------------------------------
+
+Nom de la base : livpro
+Hôte           : localhost
+Utilisateur    : root (à changer en production)
+Mot de passe   : (vide en local, à configurer en production)
+
+Tables principales :
+
+  utilisateur
+    id_user         VARCHAR  PK (ex: "id4aB2")
+    mail            VARCHAR  UNIQUE
+    nom_utilisateur VARCHAR  NULL
+    date_creation   DATETIME
+
+  livreur
+    id_livreur      INT      PK AUTO_INCREMENT
+    nom             VARCHAR
+    prenom          VARCHAR
+    age             INT      NULL
+    sex             CHAR(1)
+    numero          VARCHAR  UNIQUE
+    mail            VARCHAR  NULL
+    adresse         TEXT     NULL
+    numero_cni      VARCHAR
+    carte_grise     VARCHAR  NULL
+    type_vehicule   ENUM('moto','tricycle','camionnette','camion')
+    capacite_poids  INT      DEFAULT 500
+
+  livraison
+    id_livraison    INT      PK AUTO_INCREMENT
+    id_user         VARCHAR  FK → utilisateur
+    id_livreur      INT      FK → livreur
+    adresse_ramassage TEXT   (format "lat,lng" ou texte)
+    adresse_depot   TEXT
+    distance        FLOAT
+    prix            FLOAT
+    poids           FLOAT
+    type_vehicule   VARCHAR
+    statut          ENUM('en_attente','acceptee','en_cours','terminee','annulee')
+    date_creation   DATETIME
+
+  note
+    id_note         INT      PK AUTO_INCREMENT
+    id_livreur      INT      FK → livreur
+    note            TINYINT  (1–5)
+    commentaire     TEXT     NULL
+
+  commission
+    id_commission   INT      PK AUTO_INCREMENT
+    id_livraison    INT      FK → livraison
+    montant         DECIMAL  (10% du prix de la livraison)
+
+
+----------------------------------------------------------------
+5. FLUX UTILISATEUR
+----------------------------------------------------------------
+
+  1. L'utilisateur saisit son email sur us_form.php
+  2. models/inscrire_user.php :
+       - Si email inconnu → INSERT dans `utilisateur`, génère un id_user (ex: "id4aB2")
+       - Si email connu   → récupère l'id_user existant
+       - Envoie l'id_user par email (PHPMailer / SMTP Gmail)
+  3. L'utilisateur saisit son code sur us_otp.php
+  4. models/verif_otp.php vérifie l'id_user en base, crée la session PHP
+       ($_SESSION['id_user'], $_SESSION['mail'])
+  5. Redirection vers us_catalogue.php
+  6. L'utilisateur choisit un livreur, remplit le formulaire de livraison
+       (adresses via carte Leaflet, poids, instructions)
+  7. models/traiter_livraison.php :
+       - INSERT dans `livraison` (statut = 'en_attente')
+       - INSERT dans `commission` (10% du prix)
+       - Envoie un email de notification au livreur
+  8. L'utilisateur suit ses livraisons sur us_livraison.php
+       (carte Leaflet avec itinéraire OSRM)
+
+
+----------------------------------------------------------------
+6. AUTHENTIFICATION ET SESSIONS
+----------------------------------------------------------------
+
+  - Pas de mot de passe : authentification par code OTP envoyé par email.
+  - La session PHP stocke : id_user, mail.
+  - Toutes les pages protégées vérifient isset($_SESSION['id_user'])
+    et redirigent vers index.html si absent.
+  - Déconnexion : supprimer la session via logout.php (à implémenter
+    ou via session_destroy()).
+
+
+----------------------------------------------------------------
+7. CALCUL DU PRIX
+----------------------------------------------------------------
+
+  Prix = distance (km) × tarif_par_km (FCFA)
+
+  Tarifs par type de véhicule :
+    moto         : 300 FCFA/km
+    tricycle     : 400 FCFA/km
+    camionnette  : 500 FCFA/km
+    camion       : 700 FCFA/km
+
+  Commission plateforme : 10% du prix total
+  (insérée dans la table `commission` à chaque livraison)
+
+
+----------------------------------------------------------------
+8. CARTE INTERACTIVE (Leaflet + OSRM)
+----------------------------------------------------------------
+
+  - Bibliothèque : Leaflet.js 1.9.4 (CDN)
+  - Tuiles       : OpenStreetMap
+  - Géocodage    : Nominatim via proxy.php (évite les CORS)
+  - Itinéraires  : API OSRM publique (router.project-osrm.org)
+  - Zone par défaut : Douala, Cameroun (lat: 4.0511, lng: 9.7679)
+  - Les coordonnées sont stockées en base au format "lat,lng"
+
+  proxy.php expose deux actions :
+    GET proxy.php?action=search&q=Douala&limit=5
+    GET proxy.php?action=reverse&lat=4.05&lon=9.77
+
+
+----------------------------------------------------------------
+9. ENVOI D'EMAILS (PHPMailer)
+----------------------------------------------------------------
+
+  Bibliothèque : PHPMailer (dossier PHPMailer-master/src/)
+  SMTP         : Gmail (smtp.gmail.com, port 587, TLS)
+  Compte       : monsieuretonde@gmail.com
+  Mot de passe : App Password Gmail (à ne pas commiter en prod)
+
+  Emails envoyés :
+    - À l'utilisateur : code OTP (inscription ou connexion)
+    - À l'admin       : notification de chaque inscription/connexion
+    - Au livreur      : notification d'une nouvelle livraison assignée
+
+  IMPORTANT : En production, stocker les credentials dans des
+  variables d'environnement ou un fichier .env non versionné.
+
+
+----------------------------------------------------------------
+10. PAGES D'ACCUEIL (THÈMES)
+----------------------------------------------------------------
+
+  index.html  → Thème sombre (#050508), particules Three.js cyan
+               Icône ☀️ (fa-sun) en haut à droite → vers index2.html
+
+  index2.html → Thème clair (#F7F9FC), particules Three.js teal
+               Icône 🌙 (fa-moon) en haut à droite → vers index.html
+
+  Les deux pages partagent la même structure :
+    - Section Hero (Three.js + typewriter)
+    - Section About (4 cartes)
+    - Section Stats (compteurs animés)
+    - Section CTA
+
+
+----------------------------------------------------------------
+11. RESPONSIVE / MOBILE
+----------------------------------------------------------------
+
+  Breakpoints CSS :
+    ≤ 968px  : tablette (grille 2 colonnes, curseur custom désactivé)
+    ≤ 576px  : mobile (grille 1 colonne, boutons pleine largeur)
+    ≤ 360px  : très petits écrans
+
+  Le curseur custom (cursor + cursor-ring) est masqué sur mobile
+  et le curseur natif est restauré (cursor: auto).
+
+
+----------------------------------------------------------------
+12. POINTS D'ATTENTION POUR LES DÉVELOPPEURS
+----------------------------------------------------------------
+
+  - config.php contient les credentials BDD en clair → à externaliser
+    en production (variables d'environnement).
+
+  - Le mot de passe SMTP Gmail est en clair dans inscrire_user.php
+    et traiter_livraison.php → même remarque.
+
+  - inscrire_livreur.php contient une fonction creerMailer() dupliquée
+    de inscrire_user.php → à factoriser dans un fichier partagé.
+
+  - ad_dashboard.php ne vérifie pas la session admin → à sécuriser.
+
+  - Les pages livreur (liv_*.php) utilisent encore des données
+    statiques (Jean Dupont, livraisons fictives) → à connecter à la BDD.
+
+  - logout.php est référencé dans plusieurs fichiers mais n'existe
+    pas encore dans le dépôt → à créer (session_destroy + redirect).
+
+  - Le bouton logout a été retiré de toutes les vues (mai 2026).
+    La déconnexion doit être gérée autrement (lien dans le menu,
+    page dédiée, etc.).
+
+
+----------------------------------------------------------------
+13. LANCER LE PROJET EN LOCAL
+----------------------------------------------------------------
+
+  Prérequis :
+    - PHP 8.0+
+    - MySQL 5.7+ ou MariaDB
+    - Serveur web (Apache/Nginx) ou PHP built-in server
+
+  Étapes :
+    1. Cloner le dépôt dans le dossier web (ex: htdocs/ ou www/)
+    2. Créer la base de données "livpro" et importer le schéma SQL
+       (voir guide/bd.txt)
+    3. Vérifier config/config.php (hôte, nom BDD, user, password)
+    4. Configurer le mot de passe App Gmail dans les models si besoin
+    5. Ouvrir http://localhost/[dossier]/index.html
+
+================================================================

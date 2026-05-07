@@ -1,3 +1,40 @@
+<?php
+session_start();
+require_once '../config/config.php';
+
+if (!isset($_SESSION['id_user'])) {
+    header('Location: ../index.html');
+    exit;
+}
+
+$id_user = $_SESSION['id_user'];
+$mail    = $_SESSION['mail'] ?? '';
+
+// Récupération du nom actuel depuis la BD
+$stmt = $pdo->prepare("SELECT nom_utilisateur FROM utilisateur WHERE id_user = ?");
+$stmt->execute([$id_user]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+$nom_actuel = $user['nom'] ?? '';
+
+// Traitement du formulaire
+$message = '';
+$type_message = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nom'])) {
+    $nouveau_nom = trim($_POST['nom']);
+    if ($nouveau_nom === '') {
+        $message = 'Le nom ne peut pas être vide.';
+        $type_message = 'error';
+    } else {
+        $upd = $pdo->prepare("UPDATE utilisateur SET nom_utilisateur = ? WHERE id_user = ?");
+        $upd->execute([$nouveau_nom, $id_user]);
+        $nom_actuel = $nouveau_nom;
+        $_SESSION['nom'] = $nouveau_nom;
+        $message = 'Nom enregistré avec succès.';
+        $type_message = 'success';
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,273 +43,299 @@
     <title>LivreurPro | Mon Profil</title>
     <link rel="stylesheet" href="../css/dark/us_css.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
+    <style>
+        :root {
+            --cyan       : #00D4E8;
+            --cyan-border: rgba(0,212,232,.3);
+            --cyan-dim   : rgba(0,212,232,.08);
+            --bg         : #13151A;
+            --card       : #1C1F26;
+            --card2      : #23272E;
+            --card3      : #2A303A;
+            --white      : #EFF3F8;
+            --grey       : #7A8694;
+            --grey-light : #B8C4D0;
+        }
+
+        .profil-wrap {
+            max-width : 480px;
+            margin    : 3rem auto;
+            padding   : 0 1.2rem 4rem;
+        }
+
+        /* ── Titre page ── */
+        .profil-hero {
+            text-align   : center;
+            margin-bottom: 2.2rem;
+        }
+        .profil-hero .avatar {
+            width        : 72px; height: 72px;
+            border-radius: 50%;
+            background   : var(--card2);
+            border       : 2px solid var(--cyan-border);
+            display      : flex; align-items: center; justify-content: center;
+            margin       : 0 auto 1rem;
+            font-size    : 2rem;
+            color        : var(--cyan);
+        }
+        .profil-hero h1 {
+            font-family   : 'Barlow Condensed', sans-serif;
+            font-size     : 1.6rem;
+            font-weight   : 800;
+            color         : var(--white);
+            letter-spacing: .04em;
+            margin-bottom : .3rem;
+        }
+        .profil-hero .mail {
+            font-size: .82rem;
+            color    : var(--grey);
+        }
+
+        /* ── Carte formulaire ── */
+        .profil-card {
+            background   : var(--card);
+            border       : 1px solid var(--card3);
+            border-radius: 10px;
+            padding      : 1.8rem 1.6rem 1.4rem;
+            position     : relative;
+        }
+        .profil-card::before {
+            content : '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 3px; height: 100%;
+            background   : var(--cyan);
+            border-radius: 10px 0 0 10px;
+        }
+
+        .field-label {
+            display       : block;
+            font-size     : .68rem;
+            font-weight   : 700;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color         : var(--grey);
+            margin-bottom : .45rem;
+        }
+        .field-label i { color: var(--cyan); margin-right: .3rem; }
+
+        .field-input {
+            width        : 100%;
+            padding      : .7rem 1rem;
+            background   : var(--card2);
+            border       : 1px solid var(--card3);
+            border-radius: 6px;
+            color        : var(--white);
+            font-size    : .95rem;
+            font-family  : inherit;
+            transition   : border-color .2s, box-shadow .2s;
+            box-sizing   : border-box;
+        }
+        .field-input:focus {
+            outline     : none;
+            border-color: var(--cyan);
+            box-shadow  : 0 0 0 3px rgba(0,212,232,.12);
+        }
+        .field-input[readonly] {
+            background: var(--card3);
+            color     : var(--grey-light);
+            cursor    : not-allowed;
+        }
+
+        /* ── Actions ── */
+        .action-row {
+            display : flex;
+            gap     : .7rem;
+            margin-top: 1.4rem;
+        }
+        .btn-save {
+            flex        : 1;
+            padding     : .7rem;
+            background  : var(--cyan);
+            color       : #111;
+            border      : none;
+            border-radius: 6px;
+            font-family : inherit;
+            font-size   : .85rem;
+            font-weight : 700;
+            cursor      : pointer;
+            display     : flex; align-items: center; justify-content: center; gap: .4rem;
+            transition  : background .2s, transform .2s;
+        }
+        .btn-save:hover { background: #00b8cc; transform: translateY(-1px); }
+
+        .btn-edit {
+            padding     : .7rem 1.1rem;
+            background  : var(--card2);
+            color       : var(--grey-light);
+            border      : 1px solid var(--card3);
+            border-radius: 6px;
+            font-family : inherit;
+            font-size   : .85rem;
+            font-weight : 600;
+            cursor      : pointer;
+            display     : flex; align-items: center; gap: .4rem;
+            transition  : all .2s;
+        }
+        .btn-edit:hover { border-color: var(--cyan-border); color: var(--cyan); }
+
+        /* ── Message retour ── */
+        .feedback {
+            padding      : .65rem 1rem;
+            border-radius: 6px;
+            font-size    : .82rem;
+            margin-bottom: 1.2rem;
+            display      : flex;
+            align-items  : center;
+            gap          : .5rem;
+        }
+        .feedback.success { background: rgba(16,185,129,.12); color: #10B981; border: 1px solid rgba(16,185,129,.25); }
+        .feedback.error   { background: rgba(239,68,68,.12);  color: #EF4444; border: 1px solid rgba(239,68,68,.25);  }
+
+        /* ── Bouton suppression ── */
+        .btn-delete {
+            display      : flex;
+            align-items  : center;
+            justify-content: center;
+            gap          : .5rem;
+            width        : 100%;
+            margin-top   : 1.4rem;
+            padding      : .7rem;
+            background   : transparent;
+            border       : 1px solid rgba(239,68,68,.3);
+            border-radius: 6px;
+            color        : #EF4444;
+            font-family  : inherit;
+            font-size    : .82rem;
+            font-weight  : 600;
+            cursor       : pointer;
+            text-decoration: none;
+            transition   : all .2s;
+        }
+        .btn-delete:hover {
+            background  : rgba(239,68,68,.1);
+            border-color: #EF4444;
+        }
+    </style>
 </head>
 <body>
+
+    <!-- ══════ HEADER ══════ -->
     <header class="header">
         <div class="container">
             <div class="nav-container">
-
-                <!-- Hamburger — SEUL bouton qui ouvre/ferme le menu -->
-                <div class="menu-toggle" id="menuToggle">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-
-                <!-- Logo -->
-                <a href="../index.html" style="text-decoration: none;">
-<div style="display:inline-flex;align-items:center;justify-content:center;width:75px;height:48px;background:#00D4E8;border:2px solid #00D4E8;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));font-family:'Barlow Condensed',sans-serif;font-weight:900;font-style:italic;font-size:1.3rem;color:#1C1F24;letter-spacing:-.02em;">L.Pro</div>                </a>
-
-                <!-- Liens — aucun JS de fermeture, navigation libre -->
+                <div class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></div>
+                <a href="../index.html" style="text-decoration:none;">
+                    <div style="display:inline-flex;align-items:center;justify-content:center;
+                                width:75px;height:48px;background:#00D4E8;border:2px solid #00D4E8;
+                                clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));
+                                font-family:'Barlow Condensed',sans-serif;font-weight:900;font-style:italic;
+                                font-size:1.3rem;color:#1C1F24;letter-spacing:-.02em;">L.Pro</div>
+                </a>
                 <div class="nav-links" id="navLinks">
                     <a href="../index.html">Accueil</a>
                     <a href="us_livraison.php">Mes Commandes</a>
                     <a href="us_catalogue.php">Catalogue</a>
                     <a href="us_profil.php" class="active">Profil</a>
-                    <a href="../contact.php">Contact</a>
+                    <a href="us_contact.php">Contact</a>
                     <div class="user-info">
                         <i class="fas fa-user-circle"></i>
-                        <span id="userPhone">+237 6XX XX XX XX</span>
-                        <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+                        <span><?= htmlspecialchars($mail) ?></span>
                     </div>
                 </div>
-
             </div>
         </div>
     </header>
 
-    <!-- PAS D'OVERLAY — le menu se ferme uniquement via le hamburger -->
-
+    <!-- ══════ CONTENU ══════ -->
     <main class="main">
-        <div class="container">
-            <div class="profile-container">
+        <div class="profil-wrap">
 
-                <!-- Sidebar -->
-                <aside class="profile-sidebar">
-                    <div class="profile-avatar">
-                        <i class="fas fa-user-circle avatar-icon"></i>
-                        <h2 class="profile-name" id="profileName">Jean Kamga</h2>
-                        <p class="profile-email" id="profileEmail">jean.kamga@email.com</p>
-                    </div>
-                    <div class="profile-stats">
-                        <div class="stat-item">
-                            <span class="stat-label"><i class="fas fa-truck"></i> Livraisons</span>
-                            <span class="stat-value" id="statLivraisons">24</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label"><i class="fas fa-star"></i> Note moyenne</span>
-                            <span class="stat-value" id="statNote">4.8</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label"><i class="fas fa-calendar"></i> Membre depuis</span>
-                            <span class="stat-value" id="statMembre">Jan 2024</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label"><i class="fas fa-check-circle"></i> Taux succès</span>
-                            <span class="stat-value" id="statTaux">98%</span>
-                        </div>
-                    </div>
-                </aside>
-
-                <!-- Contenu principal -->
-                <div class="profile-main">
-                    <div class="profile-tabs">
-                        <button class="tab-btn active" data-tab="info">Informations</button>
-                        <button class="tab-btn" data-tab="history">Historique</button>
-                        <button class="tab-btn" data-tab="payment">Paiement</button>
-                    </div>
-
-                    <!-- Onglet Informations -->
-                    <div class="tab-content active" id="tab-info">
-                        <div class="row-2cols">
-                            <div class="info-group">
-                                <label><i class="fas fa-user"></i> Nom</label>
-                                <input type="text" id="nom" value="Kamga" placeholder="Votre nom">
-                            </div>
-                            <div class="info-group">
-                                <label><i class="fas fa-user"></i> Prénom</label>
-                                <input type="text" id="prenom" value="Jean" placeholder="Votre prénom">
-                            </div>
-                        </div>
-                        <div class="info-group">
-                            <label><i class="fas fa-envelope"></i> Email</label>
-                            <input type="email" id="email" value="jean.kamga@email.com" placeholder="votre@email.com">
-                        </div>
-                        <div class="info-group">
-                            <label><i class="fas fa-phone"></i> Téléphone</label>
-                            <input type="tel" id="telephone" value="697123456" placeholder="+237 6XX XX XX XX">
-                        </div>
-                        <div class="info-group">
-                            <label><i class="fas fa-map-marker-alt"></i> Adresse</label>
-                            <textarea id="adresse" rows="3" placeholder="Votre adresse complète">Douala, Cameroun</textarea>
-                        </div>
-                        <button class="btn-save" id="saveBtn">
-                            <i class="fas fa-save"></i> Enregistrer les modifications
-                        </button>
-                    </div>
-
-                    <!-- Onglet Historique -->
-                    <div class="tab-content" id="tab-history">
-                        <div class="history-list" id="historyList"></div>
-                    </div>
-
-                    <!-- Onglet Paiement -->
-                    <div class="tab-content" id="tab-payment">
-                        <div class="payment-methods" id="paymentMethods"></div>
-                        <button class="btn-save" id="addPaymentBtn" style="margin-top: 1.5rem;">
-                            <i class="fas fa-plus"></i> Ajouter une méthode de paiement
-                        </button>
-                    </div>
-                </div>
-
+            <!-- Avatar + mail -->
+            <div class="profil-hero">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <h1>Mon Profil</h1>
+                <span class="mail"><?= htmlspecialchars($mail) ?></span>
             </div>
+
+            <!-- Message retour -->
+            <?php if ($message): ?>
+            <div class="feedback <?= $type_message ?>">
+                <i class="fas <?= $type_message === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle' ?>"></i>
+                <?= htmlspecialchars($message) ?>
+            </div>
+            <?php endif; ?>
+
+            <!-- Carte formulaire -->
+            <div class="profil-card">
+                <form method="POST" id="profilForm">
+
+                    <label class="field-label" for="nom">
+                        <i class="fas fa-user"></i> Nom
+                    </label>
+                    <input
+                        type="text"
+                        id="nom"
+                        name="nom"
+                        class="field-input"
+                        value="<?= htmlspecialchars($nom_actuel) ?>"
+                        placeholder="Entrez votre nom"
+                        <?= $nom_actuel !== '' ? 'readonly' : '' ?>
+                        required
+                    />
+
+                    <div class="action-row">
+                        <?php if ($nom_actuel !== ''): ?>
+                            <!-- Mode affichage : bouton Modifier -->
+                            <button type="button" class="btn-edit" id="editBtn">
+                                <i class="fas fa-pen"></i> Modifier
+                            </button>
+                            <button type="submit" class="btn-save" id="saveBtn" style="display:none;">
+                                <i class="fas fa-save"></i> Enregistrer
+                            </button>
+                        <?php else: ?>
+                            <!-- Aucun nom : bouton Enregistrer direct -->
+                            <button type="submit" class="btn-save">
+                                <i class="fas fa-save"></i> Enregistrer
+                            </button>
+                        <?php endif; ?>
+                    </div>
+
+                </form>
+
+                <!-- Bouton suppression compte -->
+                <a href="../models/us_sup.php"
+                   class="btn-delete"
+                   onclick="return confirm('Supprimer définitivement votre compte ? Cette action est irréversible.');">
+                    <i class="fas fa-trash-alt"></i> Supprimer mon compte
+                </a>
+            </div>
+
         </div>
     </main>
 
     <script>
-        /* ══════════════════════════════
-           MENU HAMBURGER
-           Règle unique : SEUL le clic sur le bouton hamburger
-           ouvre ou ferme le panneau. Rien d'autre.
-        ══════════════════════════════ */
-        var menuToggle = document.getElementById('menuToggle');
-        var navLinks   = document.getElementById('navLinks');
-
-        menuToggle.addEventListener('click', function () {
-            menuToggle.classList.toggle('active');
-            navLinks.classList.toggle('active');
+        // ── Hamburger ──
+        document.getElementById('menuToggle').addEventListener('click', function () {
+            this.classList.toggle('active');
+            document.getElementById('navLinks').classList.toggle('active');
         });
 
-        /* Les liens <a> n'ont AUCUN listener de fermeture.
-           Le navigateur les suit normalement. */
+        // ── Bouton Modifier : repasse le champ en éditable ──
+        const editBtn = document.getElementById('editBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const nomInput = document.getElementById('nom');
 
-        /* ══════════════════════════════
-           ONGLETS
-        ══════════════════════════════ */
-        document.querySelectorAll('.tab-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
-                document.querySelectorAll('.tab-content').forEach(function (c) { c.classList.remove('active'); });
-                btn.classList.add('active');
-                document.getElementById('tab-' + btn.getAttribute('data-tab')).classList.add('active');
+        if (editBtn) {
+            editBtn.addEventListener('click', function () {
+                nomInput.removeAttribute('readonly');
+                nomInput.focus();
+                nomInput.select();
+                editBtn.style.display = 'none';
+                saveBtn.style.display = 'flex';
             });
-        });
-
-        /* ══════════════════════════════
-           DONNÉES
-        ══════════════════════════════ */
-        var userData = {
-            nom: 'Kamga', prenom: 'Jean',
-            email: 'jean.kamga@email.com',
-            telephone: '697123456',
-            adresse: 'Douala, Cameroun',
-            livraisons: 24, note: 4.8,
-            membre: 'Jan 2024', taux: 98
-        };
-
-        var historyData = [
-            { date: '15/03/2024', montant: '5 000 FCFA', statut: 'livre',   adresse: 'Douala, Bonapriso' },
-            { date: '10/03/2024', montant: '12 500 FCFA', statut: 'livre',  adresse: 'Douala, Akwa' },
-            { date: '05/03/2024', montant: '3 200 FCFA', statut: 'livre',   adresse: 'Douala, Makepe' },
-            { date: '28/02/2024', montant: '8 000 FCFA', statut: 'encours', adresse: 'Douala, Bonaberi' },
-            { date: '20/02/2024', montant: '15 000 FCFA', statut: 'livre',  adresse: 'Douala, Village' }
-        ];
-
-        var paymentMethods = [
-            { type: 'Orange Money',      numero: '697 12 34 56', defaut: true  },
-            { type: 'MTN Mobile Money',  numero: '678 90 12 34', defaut: false }
-        ];
-
-        /* ── Charger profil ── */
-        function loadUserData() {
-            document.getElementById('profileName').textContent     = userData.prenom + ' ' + userData.nom;
-            document.getElementById('profileEmail').textContent    = userData.email;
-            document.getElementById('statLivraisons').textContent  = userData.livraisons;
-            document.getElementById('statNote').textContent        = userData.note;
-            document.getElementById('statMembre').textContent      = userData.membre;
-            document.getElementById('statTaux').textContent        = userData.taux + '%';
-            document.getElementById('nom').value        = userData.nom;
-            document.getElementById('prenom').value     = userData.prenom;
-            document.getElementById('email').value      = userData.email;
-            document.getElementById('telephone').value  = userData.telephone;
-            document.getElementById('adresse').value    = userData.adresse;
-            document.getElementById('userPhone').textContent = userData.telephone;
         }
-
-        /* ── Sauvegarder ── */
-        document.getElementById('saveBtn').addEventListener('click', function () {
-            userData.nom       = document.getElementById('nom').value;
-            userData.prenom    = document.getElementById('prenom').value;
-            userData.email     = document.getElementById('email').value;
-            userData.telephone = document.getElementById('telephone').value;
-            userData.adresse   = document.getElementById('adresse').value;
-            document.getElementById('profileName').textContent  = userData.prenom + ' ' + userData.nom;
-            document.getElementById('profileEmail').textContent = userData.email;
-            alert('Profil mis à jour avec succès !');
-        });
-
-        /* ── Historique ── */
-        function loadHistory() {
-            var list = document.getElementById('historyList');
-            if (historyData.length === 0) {
-                list.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>Aucune livraison pour le moment</p></div>';
-                return;
-            }
-            list.innerHTML = historyData.map(function (item) {
-                var isLivre = item.statut === 'livre';
-                return '<div class="history-item">' +
-                    '<div class="history-info">' +
-                        '<h4>Livraison du ' + item.date + '</h4>' +
-                        '<p><i class="fas fa-map-marker-alt"></i> ' + item.adresse + '</p>' +
-                        '<p><i class="fas fa-money-bill-wave"></i> ' + item.montant + '</p>' +
-                    '</div>' +
-                    '<div class="history-status ' + (isLivre ? 'status-livre' : 'status-encours') + '">' +
-                        (isLivre ? 'Livré' : 'En cours') +
-                    '</div>' +
-                '</div>';
-            }).join('');
-        }
-
-        /* ── Paiement ── */
-        function loadPaymentMethods() {
-            var container = document.getElementById('paymentMethods');
-            if (paymentMethods.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-credit-card"></i><p>Aucune méthode de paiement enregistrée</p></div>';
-                return;
-            }
-            container.innerHTML = paymentMethods.map(function (m) {
-                return '<div class="payment-card">' +
-                    '<div class="payment-icon"><i class="fas fa-mobile-alt"></i></div>' +
-                    '<div class="payment-details"><h4>' + m.type + '</h4><p>' + m.numero + '</p></div>' +
-                    (m.defaut ? '<span class="payment-default">Par défaut</span>' : '') +
-                '</div>';
-            }).join('');
-        }
-
-        document.getElementById('addPaymentBtn').addEventListener('click', function () {
-            var type   = prompt('Type (Orange Money, MTN Mobile Money…) :');
-            var numero = prompt('Numéro :');
-            if (type && numero) {
-                paymentMethods.push({ type: type, numero: numero, defaut: false });
-                loadPaymentMethods();
-                alert('Méthode de paiement ajoutée !');
-            }
-        });
-
-        /* ── Déconnexion ── */
-        document.getElementById('logoutBtn').addEventListener('click', function () {
-            if (confirm('Voulez-vous vous déconnecter ?')) {
-                window.location.href = '../index.html';
-            }
-        });
-
-        /* ── Init ── */
-        document.addEventListener('DOMContentLoaded', function () {
-            loadUserData();
-            loadHistory();
-            loadPaymentMethods();
-        });
     </script>
 </body>
 </html>
