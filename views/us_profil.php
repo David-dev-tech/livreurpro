@@ -239,6 +239,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nom'])) {
                     <a href="us_catalogue.php">Catalogue</a>
                     <a href="us_profil.php" class="active">Profil</a>
                     <a href="us_contact.php">Contact</a>
+                    <button id="themeToggle" style="background:none; border:none; color:inherit; cursor:pointer; font-size:1.2rem; padding:0 12px;">
+    <i class="fas fa-moon"></i>
+</button>
                     <div class="user-info">
                         <i class="fas fa-user-circle"></i>
                         <span><?= htmlspecialchars($mail) ?></span>

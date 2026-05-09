@@ -223,6 +223,7 @@
                     <a href="ad_utilisateur.php" class="active">Utilisateurs</a>
                     <a href="ad_livreur.php">Livreurs</a>
                     <a href="ad_livraison.php">Livraisons</a>
+                    <a href="#" class="nav-link-disabled" style="opacity: 0.5; pointer-events: none; cursor: default; color: #888;">Commission</a>
                     <div class="user-info">
                         <i class="fas fa-user-shield"></i>
                         <span>Admin</span>

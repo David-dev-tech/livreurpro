@@ -397,10 +397,13 @@ if (!$stats) {
         </a>
         <div class="nav-links" id="navLinks">
           <a href="../index.html">Accueil</a>
+          <a href="us_livraison.php">Mes Commandes</a>
           <a href="us_catalogue.php">Catalogue</a>
           <a href="us_profil.php">Profil</a>
-          <a href="mes_livraisons.php">Mes Commandes</a>
           <a href="contact.php" class="active">Contact</a>
+          <button id="themeToggle" style="background:none; border:none; color:inherit; cursor:pointer; font-size:1.2rem; padding:0 12px;">
+    <i class="fas fa-moon"></i>
+</button>
           <div class="user-info">
             <i class="fas fa-user-circle"></i>
             <span><?php echo htmlspecialchars($_SESSION['mail'] ?? 'Utilisateur'); ?></span>

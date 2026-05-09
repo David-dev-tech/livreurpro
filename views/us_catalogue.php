@@ -45,6 +45,18 @@ unset($d);
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <style>
+
+
+
+
+
+
+
+
+
+
+
+
     :root {
       --cyan          : #00D4E8;
       --cyan-border   : rgba(0, 212, 232, 0.35);
@@ -425,10 +437,13 @@ unset($d);
         </a>
         <div class="nav-links" id="navLinks">
           <a href="../index.html">Accueil</a>
-          <a href="us_livraison.php">Mes livraisons</a>
+          <a href="us_livraison.php">Mes Commandes</a>
           <a href="us_catalogue.php" class="active">Catalogue</a>
           <a href="../views/us_profil.php">Profil</a>
           <a href="us_contact.php">Contact</a>
+          <button id="themeToggle" style="background:none; border:none; color:inherit; cursor:pointer; font-size:1.2rem; padding:0 12px;">
+    <i class="fas fa-moon"></i>
+</button>
           <div class="user-info">
             <i class="fas fa-user-circle"></i>
             <span><?php echo htmlspecialchars($_SESSION['mail'] ?? 'Utilisateur'); ?></span>
@@ -1424,5 +1439,37 @@ unset($d);
     }
   });
   </script>
+
+
+
+
+
+  <script>
+    // Gestion du thème clair/sombre
+    (function() {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'light') {
+            document.body.classList.add('light-theme');
+            const toggle = document.getElementById('themeToggle');
+            if (toggle) {
+                const icon = toggle.querySelector('i');
+                if (icon) icon.className = 'fas fa-sun';
+            }
+        }
+
+        const toggleBtn = document.getElementById('themeToggle');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('light-theme');
+                const isLight = document.body.classList.contains('light-theme');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                const icon = toggleBtn.querySelector('i');
+                if (icon) {
+                    icon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+                }
+            });
+        }
+    })();
+</script>
 </body>
 </html>

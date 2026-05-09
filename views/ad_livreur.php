@@ -1,27 +1,27 @@
 <?php
-// Connexion à la base de données
-$host = 'localhost';
-$dbname = 'livpro';
-$username = 'root';        // Change si nécessaire
-$password = '';            // Change si nécessaire
+session_start();
 
+// =============================================
+// CONNEXION À LA BASE DE DONNÉES
+// =============================================
+require_once '../config/config.php';
+
+// =============================================
+// RÉCUPÉRATION DES LIVREURS
+// =============================================
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
-    die("Erreur de connexion : " . $e->getMessage());
+    $stmt = $pdo->query("SELECT * FROM livreur ORDER BY id_livreur DESC");
+    $livreurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Erreur lors de la récupération des livreurs : " . $e->getMessage());
 }
-
-// Récupération de tous les livreurs
-$stmt = $pdo->query("SELECT * FROM livreur ORDER BY id_livreur DESC");
-$livreurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LivreurPro | Administration</title>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,700;0,900;1,900&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -44,6 +44,8 @@ $livreurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <a href="ad_utilisateur.php">Utilisateurs</a>
                     <a href="ad_livreur.php" class="active">Livreurs</a>
                     <a href="ad_livraison.php">Livraisons</a>
+                                    <a href="#" class="nav-link-disabled" style="opacity: 0.5; pointer-events: none; cursor: default; color: #888;">Commission</a>
+
                     <div class="user-info">
                         <i class="fas fa-user-shield"></i>
                         <span>Admin</span>
@@ -62,13 +64,14 @@ $livreurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <p class="page-subtitle">Enregistrez et gérez tous les livreurs de votre équipe</p>
             </div>
 
-            <!-- Formulaire d'ajout de livreur -->
+            <!-- Formulaire d'ajout -->
             <div class="table-section">
                 <div class="table-header">
                     <div class="table-title"><i class="fas fa-user-plus"></i> Enregistrer un nouveau livreur</div>
                 </div>
                 
                 <form action="../models/inscrire_livreur.php" method="POST" class="add-form">
+                    <!-- Ton formulaire reste identique -->
                     <div class="form-row">
                         <div class="form-group">
                             <label>Nom <span class="required">*</span></label>
@@ -110,18 +113,17 @@ $livreurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <label>Adresse</label>
                         <textarea name="adresse" rows="3" placeholder="Adresse complète du livreur"></textarea>
                     </div>
+
                     <div class="form-group">
-        <label>Type de véhicule <span class="required">*</span></label>
-        <select name="type_vehicule" required>
-            <option value="">Sélectionnez le type de véhicule</option>
-            <option value="Moto">Moto</option>
-            <option value="tricycle">Tricycle</option>
-            <option value="camionnette">Camionnette</option>
-
-            <option value="camion">Camion</option>
-
-        </select>
-    </div>
+                        <label>Type de véhicule <span class="required">*</span></label>
+                        <select name="type_vehicule" required>
+                            <option value="">Sélectionnez le type de véhicule</option>
+                            <option value="moto">Moto</option>
+                            <option value="tricycle">Tricycle</option>
+                            <option value="camionnette">Camionnette</option>
+                            <option value="camion">Camion</option>
+                        </select>
+                    </div>
 
                     <div class="form-row">
                         <div class="form-group">
@@ -141,10 +143,12 @@ $livreurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </form>
             </div>
 
-            <!-- Tableau des livreurs existants -->
+            <!-- Tableau des livreurs -->
             <div class="table-section" style="margin-top: 40px;">
                 <div class="table-header">
-                    <div class="table-title"><i class="fas fa-list"></i> Liste des livreurs enregistrés (<?php echo count($livreurs); ?>)</div>
+                    <div class="table-title">
+                        <i class="fas fa-list"></i> Liste des livreurs enregistrés (<?= count($livreurs) ?>)
+                    </div>
                 </div>
 
                 <table>
@@ -163,21 +167,21 @@ $livreurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </thead>
                     <tbody>
                         <?php if (empty($livreurs)): ?>
-                            <tr><td colspan="9" style="text-align:center; padding:30px;">Aucun livreur enregistré pour le moment.</td></tr>
+                            <tr><td colspan="9" style="text-align:center; padding:40px;">Aucun livreur enregistré pour le moment.</td></tr>
                         <?php else: ?>
                             <?php foreach ($livreurs as $l): ?>
                                 <tr>
-                                    <td><?php echo $l['id_livreur']; ?></td>
-                                    <td><strong><?php echo htmlspecialchars($l['nom'] . ' ' . $l['prenom']); ?></strong></td>
-                                    <td><?php echo $l['age'] ?? '-'; ?></td>
-                                    <td><?php echo $l['sex'] === 'M' ? 'Masculin' : 'Féminin'; ?></td>
-                                    <td><?php echo htmlspecialchars($l['numero']); ?></td>
-                                    <td><?php echo htmlspecialchars($l['mail'] ?? '-'); ?></td>
-                                    <td><?php echo htmlspecialchars($l['numero_cni'] ?? '-'); ?></td>
-                                    <td><?php echo htmlspecialchars($l['carte_grise'] ?? '-'); ?></td>
+                                    <td><?= $l['id_livreur'] ?></td>
+                                    <td><strong><?= htmlspecialchars($l['nom'] . ' ' . $l['prenom']) ?></strong></td>
+                                    <td><?= $l['age'] ?? '-' ?></td>
+                                    <td><?= $l['sex'] === 'M' ? 'Masculin' : 'Féminin' ?></td>
+                                    <td><?= htmlspecialchars($l['numero']) ?></td>
+                                    <td><?= htmlspecialchars($l['mail'] ?? '-') ?></td>
+                                    <td><?= htmlspecialchars($l['numero_cni'] ?? '-') ?></td>
+                                    <td><?= htmlspecialchars($l['carte_grise'] ?? '-') ?></td>
                                     <td>
                                         <button class="btn-small" onclick="alert('Modification à venir')">Modifier</button>
-                                        <button class="btn-small btn-danger" onclick="if(confirm('Supprimer ce livreur ?')) location.href='ad_livreur_delete.php?id=<?php echo $l['id_livreur']; ?>'">Supprimer</button>
+                                        <button class="btn-small btn-danger" onclick="if(confirm('Supprimer ce livreur ?')) location.href='ad_livreur_delete.php?id=<?= $l['id_livreur'] ?>'">Supprimer</button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -189,7 +193,6 @@ $livreurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </main>
 
     <script>
-        // Petit script pour le menu (tu peux le garder tel quel)
         document.getElementById('menuToggle').addEventListener('click', function() {
             document.getElementById('navLinks').classList.toggle('active');
             document.getElementById('menuOverlay').classList.toggle('active');
