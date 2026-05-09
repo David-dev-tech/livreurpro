@@ -1,23 +1,38 @@
 <?php
 session_start();
 
-$host = 'localhost'; $dbname = 'livpro';
-$username = 'root';  $password = '';
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) { die("Erreur BDD : " . $e->getMessage()); }
+// =============================================
+// INCLUSION DU FICHIER DE CONNEXION
+// =============================================
+require_once '../config/config.php';
 
+// =============================================
+// RÉCUPÉRATION DU LIVREUR CONNECTÉ
+// =============================================
 $id_livreur = isset($_GET['id']) ? (int)$_GET['id']
             : (isset($_SESSION['id_livreur']) ? (int)$_SESSION['id_livreur'] : 0);
-if (!$id_livreur) die('<p style="color:#f87171;padding:40px;font-family:sans-serif;">Accès refusé.</p>');
+
+if (!$id_livreur) {
+    die('<p style="color:#f87171;padding:40px;font-family:sans-serif;">
+         Accès refusé. <a href="liv_login.php" style="color:#00D4E8;">Se connecter</a></p>');
+}
+
 $_SESSION['id_livreur'] = $id_livreur;
 
+// =============================================
+// DONNÉES DU LIVREUR
+// =============================================
 $stmtL = $pdo->prepare("SELECT * FROM livreur WHERE id_livreur = ?");
 $stmtL->execute([$id_livreur]);
 $livreur = $stmtL->fetch(PDO::FETCH_ASSOC);
-if (!$livreur) die('<p style="color:#f87171;padding:40px;font-family:sans-serif;">Livreur introuvable.</p>');
 
+if (!$livreur) {
+    die('<p style="color:#f87171;padding:40px;font-family:sans-serif;">Livreur introuvable.</p>');
+}
+
+// =============================================
+// TRAITEMENT DES ACTIONS (Accepter, Refuser...)
+// =============================================
 $flash = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['id_livraison'])) {
     $id_liv = (int)$_POST['id_livraison'];
@@ -28,37 +43,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['id_
     $row = $check->fetch(PDO::FETCH_ASSOC);
 
     if ($row) {
-        if ($action === 'accepter' && $row['statut'] === 'en_attente') {
-            $pdo->prepare("UPDATE livraison SET id_livreur=?, statut='acceptee', date_validation=NOW() WHERE id_livraison=?")
+        if ($action === 'accepter') {
+            $pdo->prepare("UPDATE livraison SET id_livreur = ?, statut = 'acceptee', date_validation = NOW() WHERE id_livraison = ?")
                 ->execute([$id_livreur, $id_liv]);
             $flash = ['type' => 'success', 'msg' => 'Livraison #' . $id_liv . ' acceptée.'];
-        } elseif ($action === 'refuser' && $row['statut'] === 'en_attente') {
-            $pdo->prepare("UPDATE livraison SET statut='refusee' WHERE id_livraison=?")
+        } elseif ($action === 'refuser') {
+            $pdo->prepare("UPDATE livraison SET statut = 'refusee' WHERE id_livraison = ?")
                 ->execute([$id_liv]);
             $flash = ['type' => 'error', 'msg' => 'Livraison #' . $id_liv . ' refusée.'];
         } elseif ($action === 'demarrer' && $row['statut'] === 'acceptee' && $row['id_livreur'] == $id_livreur) {
-            $pdo->prepare("UPDATE livraison SET statut='en_cours' WHERE id_livraison=?")
+            $pdo->prepare("UPDATE livraison SET statut = 'en_cours' WHERE id_livraison = ?")
                 ->execute([$id_liv]);
             $flash = ['type' => 'success', 'msg' => 'Livraison #' . $id_liv . ' démarrée.'];
         } elseif ($action === 'terminer' && $row['statut'] === 'en_cours' && $row['id_livreur'] == $id_livreur) {
-            $pdo->prepare("UPDATE livraison SET statut='terminee', date_validation=NOW() WHERE id_livraison=?")
+            $pdo->prepare("UPDATE livraison SET statut = 'terminee', date_validation = NOW() WHERE id_livraison = ?")
                 ->execute([$id_liv]);
             if ($row['prix']) {
                 $commission = round($row['prix'] * 0.10, 2);
                 $pdo->prepare("INSERT INTO commission (id_livraison, montant) VALUES (?, ?)")
                     ->execute([$id_liv, $commission]);
             }
-            $flash = ['type' => 'success', 'msg' => 'Livraison #' . $id_liv . ' marquée terminée.'];
+            $flash = ['type' => 'success', 'msg' => 'Livraison #' . $id_liv . ' terminée.'];
         } elseif ($action === 'annuler' && in_array($row['statut'], ['acceptee', 'en_cours']) && $row['id_livreur'] == $id_livreur) {
-            $pdo->prepare("UPDATE livraison SET statut='annulee' WHERE id_livraison=?")
+            $pdo->prepare("UPDATE livraison SET statut = 'annulee' WHERE id_livraison = ?")
                 ->execute([$id_liv]);
             $flash = ['type' => 'error', 'msg' => 'Livraison #' . $id_liv . ' annulée.'];
-        } else {
-            $flash = ['type' => 'error', 'msg' => 'Action non autorisée.'];
         }
     }
 }
 
+// =============================================
+// LISTE DES LIVRAISONS
+// =============================================
 $filterStatut = isset($_GET['statut']) ? $_GET['statut'] : '';
 $validStatuts = ['', 'en_attente', 'acceptee', 'en_cours', 'terminee', 'annulee', 'refusee'];
 if (!in_array($filterStatut, $validStatuts)) $filterStatut = '';
@@ -70,32 +86,37 @@ $sql = "
     WHERE (l.id_livreur = :id OR (l.statut = 'en_attente' AND l.id_livreur IS NULL))
 ";
 $params = [':id' => $id_livreur];
+
 if ($filterStatut) {
     $sql .= " AND l.statut = :statut";
     $params[':statut'] = $filterStatut;
 }
 $sql .= " ORDER BY l.date_creation DESC";
+
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Fonctions utilitaires
 function statutLabel(string $s): string {
     return match($s) {
         'en_attente' => 'En attente', 'acceptee' => 'Acceptée',
-        'en_cours'   => 'En cours',   'terminee' => 'Terminée',
-        'annulee'    => 'Annulée',    'refusee'  => 'Refusée',
-        default      => ucfirst($s),
+        'en_cours' => 'En cours', 'terminee' => 'Terminée',
+        'annulee' => 'Annulée', 'refusee' => 'Refusée',
+        default => ucfirst($s),
     };
 }
+
 function statutClass(string $s): string {
     return match($s) {
-        'en_attente' => 'status-warning', 'acceptee'  => 'status-info',
-        'en_cours'   => 'status-primary', 'terminee'  => 'status-success',
-        'annulee'    => 'status-danger',  'refusee'   => 'status-danger',
-        default      => '',
+        'en_attente' => 'status-warning', 'acceptee' => 'status-info',
+        'en_cours' => 'status-primary', 'terminee' => 'status-success',
+        'annulee', 'refusee' => 'status-danger',
+        default => '',
     };
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -202,10 +223,7 @@ function statutClass(string $s): string {
     }
     .map-loader {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        top: 0; left: 0; right: 0; bottom: 0;
         background: rgba(15, 17, 23, 0.9);
         display: flex;
         flex-direction: column;
@@ -227,12 +245,13 @@ function statutClass(string $s): string {
         font-size: .75rem;
     }
     .legend-dot {
-        width: 12px;
-        height: 12px;
+        width: 12px; height: 12px;
         border-radius: 50%;
         display: inline-block;
         margin-right: 6px;
     }
+
+    /* ── FOOTER MODAL ── */
     .modal-footer {
         padding: 16px 24px 24px;
         border-top: 1px solid var(--border);
@@ -247,37 +266,45 @@ function statutClass(string $s): string {
         align-items: center;
         justify-content: center;
         gap: 10px;
-        padding: 14px 20px;
+        padding: 15px 20px;
         border-radius: var(--radius-md);
         font-family: var(--font-display);
-        font-weight: 700;
-        font-size: 1rem;
+        font-weight: 900;
+        font-style: italic;
+        font-size: 1.05rem;
+        letter-spacing: .04em;
         cursor: pointer;
-        transition: all var(--transition);
+        transition: all .2s ease;
         border: none;
+        text-transform: uppercase;
     }
     .btn-accept {
-        background: var(--success);
+        background: #22C55E;
         color: #0F1117;
+        box-shadow: 0 4px 20px rgba(34,197,94,.35);
     }
     .btn-accept:hover {
         background: #16a34a;
         transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(34,197,94,.5);
     }
     .btn-refuse {
-        background: var(--danger);
+        background: #F87171;
         color: #0F1117;
+        box-shadow: 0 4px 20px rgba(248,113,113,.35);
     }
     .btn-refuse:hover {
         background: #dc2626;
         transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(248,113,113,.5);
     }
+    .btn-modal i { font-size: 1.1rem; }
+
     @media (max-width: 768px) {
         .menu-toggle { display: flex; }
         .nav-links {
             position: fixed;
-            top: 68px;
-            left: -100%;
+            top: 68px; left: -100%;
             width: 280px;
             height: calc(100vh - 68px);
             background: var(--bg-card);
@@ -381,10 +408,29 @@ function statutClass(string $s): string {
                                 <td><?php echo htmlspecialchars(ucfirst($liv['type_vehicule'] ?? '-')); ?></td>
                                 <td><span class="status-badge <?php echo statutClass($liv['statut']); ?>"><?php echo statutLabel($liv['statut']); ?></span></td>
                                 <td style="white-space:nowrap;font-size:.8rem;color:var(--text-muted);"><?php echo $liv['date_creation'] ? date('d/m/Y H:i', strtotime($liv['date_creation'])) : '-'; ?></td>
-                                <td>
+                                <td style="white-space:nowrap;">
                                     <button class="btn-small" onclick='voirDetails(<?php echo json_encode($liv); ?>)' title="Voir détails">
                                         <i class="fas fa-eye"></i> Détails
                                     </button>
+
+                                    <!-- ACCEPTER -->
+                                    <form method="POST" style="display:inline;">
+                                        <input type="hidden" name="id_livraison" value="<?php echo $liv['id_livraison']; ?>">
+                                        <input type="hidden" name="action" value="accepter">
+                                        <button type="submit" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#22C55E;color:#0F1117;border:none;border-radius:6px;font-weight:700;font-size:.8rem;cursor:pointer;">
+                                            <i class="fas fa-check"></i> Accepter
+                                        </button>
+                                    </form>
+
+                                    <!-- REFUSER -->
+                                    <form method="POST" style="display:inline;">
+                                        <input type="hidden" name="id_livraison" value="<?php echo $liv['id_livraison']; ?>">
+                                        <input type="hidden" name="action" value="refuser">
+                                        <button type="submit" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#F87171;color:#0F1117;border:none;border-radius:6px;font-weight:700;font-size:.8rem;cursor:pointer;">
+                                            <i class="fas fa-times"></i> Refuser
+                                        </button>
+                                    </form>
+
                                     <?php if ($liv['statut'] === 'acceptee' && $liv['id_livreur'] == $id_livreur): ?>
                                         <form method="POST" style="display:inline;">
                                             <input type="hidden" name="id_livraison" value="<?php echo $liv['id_livraison']; ?>">
@@ -409,13 +455,20 @@ function statutClass(string $s): string {
     </div>
 </main>
 
-<!-- MODALE AVEC CARTE -->
+<!-- =============================================
+     MODALE AVEC CARTE + BOUTONS ACCEPTER/REFUSER
+     ============================================= -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
+
         <div class="modal-header">
-            <div class="modal-title"><i class="fas fa-route"></i> Itinéraire de livraison #<span id="modalId"></span></div>
+            <div class="modal-title">
+                <i class="fas fa-route"></i>
+                Itinéraire de livraison #<span id="modalId"></span>
+            </div>
             <button class="modal-close" onclick="fermerModal()"><i class="fas fa-times"></i></button>
         </div>
+
         <div class="modal-body">
             <div class="info-grid" id="modalInfos"></div>
             <div class="map-container">
@@ -431,7 +484,10 @@ function statutClass(string $s): string {
                 </div>
             </div>
         </div>
+
+        <!-- ── FOOTER : boutons Accepter / Refuser toujours visibles si en_attente ── -->
         <div class="modal-footer" id="modalFooter"></div>
+
     </div>
 </div>
 
@@ -441,7 +497,6 @@ let mapInstance = null;
 let currentMarkers = null;
 let currentRoute = null;
 
-// Proxy pour le géocodage (utilise Nominatim)
 const PROXY_URL = '../models/proxy.php';
 
 async function geocodeAddress(address) {
@@ -450,15 +505,9 @@ async function geocodeAddress(address) {
         const response = await fetch(url);
         const data = await response.json();
         if (data && data.length > 0) {
-            return {
-                lat: parseFloat(data[0].lat),
-                lng: parseFloat(data[0].lon),
-                name: data[0].display_name
-            };
+            return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), name: data[0].display_name };
         }
-    } catch(e) {
-        console.error('Erreur géocodage:', e);
-    }
+    } catch(e) { console.error('Erreur géocodage:', e); }
     return null;
 }
 
@@ -467,152 +516,115 @@ async function getRoute(startLat, startLng, endLat, endLng) {
         const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
         const response = await fetch(url);
         const data = await response.json();
-        if (data.routes && data.routes[0]) {
-            return data.routes[0].geometry;
-        }
-    } catch(e) {
-        console.error('Erreur routage:', e);
-    }
+        if (data.routes && data.routes[0]) return data.routes[0].geometry;
+    } catch(e) { console.error('Erreur routage:', e); }
     return null;
 }
 
 function createIcon(color, letter) {
     return L.divIcon({
-        html: `<div style="background:${color}; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:3px solid white; box-shadow:0 2px 10px rgba(0,0,0,0.3);"><span style="color:white; font-weight:bold; font-size:16px;">${letter}</span></div>`,
+        html: `<div style="background:${color};width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,.3)"><span style="color:white;font-weight:bold;font-size:16px">${letter}</span></div>`,
         iconSize: [36, 36],
         className: ''
     });
 }
 
+function getStatutLabel(s) {
+    return {en_attente:'En attente',acceptee:'Acceptée',en_cours:'En cours',terminee:'Terminée',annulee:'Annulée',refusee:'Refusée'}[s] || s;
+}
+function getStatutClass(s) {
+    return {en_attente:'status-warning',acceptee:'status-info',en_cours:'status-primary',terminee:'status-success',annulee:'status-danger',refusee:'status-danger'}[s] || '';
+}
+function escapeHtml(t) {
+    if (!t) return '-';
+    const d = document.createElement('div'); d.textContent = t; return d.innerHTML;
+}
+
 async function voirDetails(livraison) {
-    // Afficher les infos
     document.getElementById('modalId').textContent = livraison.id_livraison;
+
     document.getElementById('modalInfos').innerHTML = `
-        <div class="info-item"><span class="info-label">Client</span><span class="info-value">${escapeHtml(livraison.nom_utilisateur || 'N/A')}</span></div>
-        <div class="info-item"><span class="info-label">Email</span><span class="info-value">${escapeHtml(livraison.mail_user || '-')}</span></div>
+        <div class="info-item"><span class="info-label">Client</span><span class="info-value">${escapeHtml(livraison.nom_utilisateur)}</span></div>
+        <div class="info-item"><span class="info-label">Email</span><span class="info-value">${escapeHtml(livraison.mail_user)}</span></div>
         <div class="info-item"><span class="info-label">Statut</span><span class="info-value"><span class="status-badge ${getStatutClass(livraison.statut)}">${getStatutLabel(livraison.statut)}</span></span></div>
         <div class="info-item"><span class="info-label">Distance</span><span class="info-value">${livraison.distance ? livraison.distance + ' km' : '-'}</span></div>
         <div class="info-item"><span class="info-label">Poids</span><span class="info-value">${livraison.poids ? livraison.poids + ' kg' : '-'}</span></div>
         <div class="info-item"><span class="info-label">Prix</span><span class="info-value">${livraison.prix ? Number(livraison.prix).toLocaleString('fr-FR') + ' FCFA' : '-'}</span></div>
-        <div class="info-item"><span class="info-label">Véhicule</span><span class="info-value">${livraison.type_vehicule || '-'}</span></div>
+        <div class="info-item"><span class="info-label">Véhicule</span><span class="info-value">${escapeHtml(livraison.type_vehicule)}</span></div>
+        <div class="info-item"><span class="info-label">Date création</span><span class="info-value">${livraison.date_creation || '-'}</span></div>
         <div class="info-item full-width"><span class="info-label">Adresse de ramassage</span><span class="info-value">${escapeHtml(livraison.adresse_ramassage)}</span></div>
         <div class="info-item full-width"><span class="info-label">Adresse de dépôt</span><span class="info-value">${escapeHtml(livraison.adresse_depot)}</span></div>
     `;
-    
-    // Afficher les boutons Accepter/Refuser
+
+    // ── BOUTONS ACCEPTER / REFUSER — toujours visibles ──
     const footer = document.getElementById('modalFooter');
-    if (livraison.statut === 'en_attente' && !livraison.id_livreur) {
-        footer.innerHTML = `
-            <div class="action-buttons">
-                <form method="POST" style="flex:1" onsubmit="return confirm('Accepter cette livraison ?')">
-                    <input type="hidden" name="id_livraison" value="${livraison.id_livraison}">
-                    <input type="hidden" name="action" value="accepter">
-                    <button type="submit" class="btn-modal btn-accept"><i class="fas fa-check-circle"></i> Accepter</button>
-                </form>
-                <form method="POST" style="flex:1" onsubmit="return confirm('Refuser cette livraison ?')">
-                    <input type="hidden" name="id_livraison" value="${livraison.id_livraison}">
-                    <input type="hidden" name="action" value="refuser">
-                    <button type="submit" class="btn-modal btn-refuse"><i class="fas fa-times-circle"></i> Refuser</button>
-                </form>
-            </div>
-        `;
-    } else {
-        footer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 10px;"><i class="fas fa-info-circle"></i> Livraison ${getStatutLabel(livraison.statut).toLowerCase()}</div>`;
-    }
-    
-    // Ouvrir la modale
+    footer.innerHTML = `
+        <div class="action-buttons">
+            <form method="POST" style="flex:1">
+                <input type="hidden" name="id_livraison" value="${livraison.id_livraison}">
+                <input type="hidden" name="action" value="accepter">
+                <button type="submit" class="btn-modal btn-accept">
+                    <i class="fas fa-check-circle"></i> Accepter la livraison
+                </button>
+            </form>
+            <form method="POST" style="flex:1">
+                <input type="hidden" name="id_livraison" value="${livraison.id_livraison}">
+                <input type="hidden" name="action" value="refuser">
+                <button type="submit" class="btn-modal btn-refuse">
+                    <i class="fas fa-times-circle"></i> Refuser la livraison
+                </button>
+            </form>
+        </div>
+    `;
+
     document.getElementById('modalOverlay').classList.add('open');
-    
-    // Initialiser la carte
     setTimeout(() => initMapWithAddresses(livraison), 200);
 }
 
 async function initMapWithAddresses(livraison) {
     const loader = document.getElementById('mapLoader');
     loader.classList.remove('hidden');
-    
-    // Créer ou réutiliser la carte
+
     if (!mapInstance) {
-        mapInstance = L.map('modalMap').setView([5.5, 12.3], 6);
+        mapInstance = L.map('modalMap').setView([4.05, 9.7], 12);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(mapInstance);
     }
-    
-    // Nettoyer les anciens calques
-    if (currentMarkers) {
-        mapInstance.removeLayer(currentMarkers);
-        currentMarkers = null;
-    }
-    if (currentRoute) {
-        mapInstance.removeLayer(currentRoute);
-        currentRoute = null;
-    }
-    
-    // Redimensionner la carte
+
+    if (currentMarkers) { mapInstance.removeLayer(currentMarkers); currentMarkers = null; }
+    if (currentRoute)   { mapInstance.removeLayer(currentRoute);   currentRoute   = null; }
+
     setTimeout(() => mapInstance.invalidateSize(), 100);
-    
-    // Géocoder les deux adresses
-    const pickupAddr = livraison.adresse_ramassage + ', Cameroun';
-    const dropoffAddr = livraison.adresse_depot + ', Cameroun';
-    
+
     const [pickup, dropoff] = await Promise.all([
-        geocodeAddress(pickupAddr),
-        geocodeAddress(dropoffAddr)
+        geocodeAddress(livraison.adresse_ramassage),
+        geocodeAddress(livraison.adresse_depot)
     ]);
-    
+
     if (!pickup || !dropoff) {
         loader.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Impossible de localiser les adresses</span>';
         return;
     }
-    
-    // Ajouter les marqueurs
+
     currentMarkers = L.layerGroup().addTo(mapInstance);
-    L.marker([pickup.lat, pickup.lng], { icon: createIcon('#22C55E', 'D') })
+    L.marker([pickup.lat,  pickup.lng],  { icon: createIcon('#22C55E', 'D') })
         .bindPopup(`<b>📦 Ramassage</b><br>${livraison.adresse_ramassage}`)
         .addTo(currentMarkers);
     L.marker([dropoff.lat, dropoff.lng], { icon: createIcon('#F87171', 'A') })
         .bindPopup(`<b>🏁 Dépôt</b><br>${livraison.adresse_depot}`)
         .addTo(currentMarkers);
-    
-    // Ajuster la vue
-    const bounds = [[pickup.lat, pickup.lng], [dropoff.lat, dropoff.lng]];
-    mapInstance.fitBounds(bounds, { padding: [50, 50] });
-    
-    // Tracer l'itinéraire
+
+    mapInstance.fitBounds([[pickup.lat, pickup.lng],[dropoff.lat, dropoff.lng]], { padding: [50, 50] });
+
     const routeGeometry = await getRoute(pickup.lat, pickup.lng, dropoff.lat, dropoff.lng);
     if (routeGeometry) {
         currentRoute = L.geoJSON(routeGeometry, {
             style: { color: '#00D4E8', weight: 4, opacity: 0.8, dashArray: '8, 8' }
         }).addTo(mapInstance);
     }
-    
+
     loader.classList.add('hidden');
-}
-
-function getStatutLabel(statut) {
-    const labels = {
-        en_attente: 'En attente', acceptee: 'Acceptée',
-        en_cours: 'En cours', terminee: 'Terminée',
-        annulee: 'Annulée', refusee: 'Refusée'
-    };
-    return labels[statut] || statut;
-}
-
-function getStatutClass(statut) {
-    const classes = {
-        en_attente: 'status-warning', acceptee: 'status-info',
-        en_cours: 'status-primary', terminee: 'status-success',
-        annulee: 'status-danger', refusee: 'status-danger'
-    };
-    return classes[statut] || '';
-}
-
-function escapeHtml(text) {
-    if (!text) return '-';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }
 
 function fermerModal() {

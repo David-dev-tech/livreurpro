@@ -1,46 +1,61 @@
 <?php
 session_start();
 
-$host = 'localhost'; $dbname = 'livpro';
-$username = 'root';  $password = '';
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) { die("Erreur BDD : " . $e->getMessage()); }
+// =============================================
+// INCLUSION DU FICHIER DE CONNEXION
+// =============================================
+require_once '../config/config.php';
 
+// =============================================
+// RÉCUPÉRATION DU LIVREUR CONNECTÉ
+// =============================================
 $id_livreur = isset($_GET['id']) ? (int)$_GET['id']
             : (isset($_SESSION['id_livreur']) ? (int)$_SESSION['id_livreur'] : 0);
-if (!$id_livreur) die('<p style="color:#f87171;padding:40px;font-family:sans-serif;">Accès refusé.</p>');
+
+if (!$id_livreur) {
+    die('<p style="color:#f87171;padding:40px;font-family:sans-serif;">
+         Accès refusé. <a href="liv_login.php" style="color:#00D4E8;">Se connecter</a></p>');
+}
+
 $_SESSION['id_livreur'] = $id_livreur;
 
-// ── Données livreur ───────────────────────────────────────
+// =============================================
+// DONNÉES DU LIVREUR
+// =============================================
 $stmtL = $pdo->prepare("SELECT * FROM livreur WHERE id_livreur = ?");
 $stmtL->execute([$id_livreur]);
 $livreur = $stmtL->fetch(PDO::FETCH_ASSOC);
-if (!$livreur) die('<p style="color:#f87171;padding:40px;font-family:sans-serif;">Livreur introuvable.</p>');
 
-// ── Flash ─────────────────────────────────────────────────
+if (!$livreur) {
+    die('<p style="color:#f87171;padding:40px;font-family:sans-serif;">Livreur introuvable.</p>');
+}
+
+// =============================================
+// MISE À JOUR DU PROFIL
+// =============================================
 $flash = null;
-
-// ── Mise à jour profil ────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profil'])) {
-    $mail    = trim($_POST['mail']    ?? '');
+    $mail    = trim($_POST['mail'] ?? '');
     $adresse = trim($_POST['adresse'] ?? '');
-    $numero  = trim($_POST['numero']  ?? '');
+    $numero  = trim($_POST['numero'] ?? '');
 
     try {
-        $pdo->prepare("UPDATE livreur SET mail=?, adresse=?, numero=? WHERE id_livreur=?")
+        $pdo->prepare("UPDATE livreur SET mail = ?, adresse = ?, numero = ? WHERE id_livreur = ?")
             ->execute([$mail ?: null, $adresse ?: null, $numero, $id_livreur]);
-        // Rafraîchir
+        
+        // Rafraîchir les données
         $stmtL->execute([$id_livreur]);
         $livreur = $stmtL->fetch(PDO::FETCH_ASSOC);
+        
         $flash = ['type' => 'success', 'msg' => 'Profil mis à jour avec succès.'];
     } catch (PDOException $e) {
-        $flash = ['type' => 'error', 'msg' => 'Erreur : ' . $e->getMessage()];
+        $flash = ['type' => 'error', 'msg' => 'Erreur lors de la mise à jour : ' . $e->getMessage()];
     }
 }
 
-// ── Notes & avis ──────────────────────────────────────────
+// =============================================
+// NOTES & AVIS
+// =============================================
 $notesStmt = $pdo->prepare("SELECT * FROM note WHERE id_livreur = ? ORDER BY id_note DESC");
 $notesStmt->execute([$id_livreur]);
 $notes = $notesStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -50,18 +65,22 @@ $avgStmt->execute([$id_livreur]);
 $avgData = $avgStmt->fetch(PDO::FETCH_ASSOC);
 $moyenne = $avgData['moy'] ? round($avgData['moy'], 1) : null;
 
-// ── Répartition des notes ─────────────────────────────────
+// Répartition des notes
 $repartition = array_fill(1, 5, 0);
-foreach ($notes as $n) { $repartition[(int)$n['note']]++; }
+foreach ($notes as $n) {
+    $repartition[(int)$n['note']]++;
+}
 $totalNotes = count($notes);
 
-// ── Stats livraisons ──────────────────────────────────────
+// =============================================
+// STATISTIQUES LIVRAISONS
+// =============================================
 $statsStmt = $pdo->prepare("
     SELECT
         COUNT(*) AS total,
-        SUM(statut='terminee') AS terminees,
-        COALESCE(SUM(CASE WHEN statut='terminee' THEN prix END), 0) AS gains,
-        COALESCE(SUM(CASE WHEN statut='terminee' THEN distance END), 0) AS km
+        SUM(CASE WHEN statut='terminee' THEN 1 ELSE 0 END) AS terminees,
+        COALESCE(SUM(CASE WHEN statut='terminee' THEN prix ELSE 0 END), 0) AS gains,
+        COALESCE(SUM(CASE WHEN statut='terminee' THEN distance ELSE 0 END), 0) AS km
     FROM livraison WHERE id_livreur = ?
 ");
 $statsStmt->execute([$id_livreur]);
@@ -69,6 +88,7 @@ $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
 
 $initiales = strtoupper(mb_substr($livreur['prenom'], 0, 1) . mb_substr($livreur['nom'], 0, 1));
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>

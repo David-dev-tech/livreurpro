@@ -1,82 +1,78 @@
 <?php
 session_start();
 
-// ── Connexion BDD ──────────────────────────────────────────
-$host = 'localhost'; $dbname = 'livpro';
-$username = 'root';  $password = '';
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) { die("Erreur BDD : " . $e->getMessage()); }
+// =============================================
+// INCLUSION DU FICHIER DE CONNEXION
+// =============================================
+require_once '../config/config.php';
 
-// ── Auth : récupérer le livreur connecté ──────────────────
-// On accepte ?id=X en GET pour la démo ; en prod, utiliser la session.
+// =============================================
+// RÉCUPÉRATION DU LIVREUR CONNECTÉ
+// =============================================
 $id_livreur = isset($_GET['id']) ? (int)$_GET['id']
             : (isset($_SESSION['id_livreur']) ? (int)$_SESSION['id_livreur'] : 0);
 
 if (!$id_livreur) {
-    // Aucun livreur authentifié → redirige ou affiche erreur
     die('<p style="color:#f87171;font-family:sans-serif;padding:40px;">
          Accès refusé. <a href="liv_login.php" style="color:#00D4E8;">Se connecter</a></p>');
 }
 
-// Stocker dans session pour les autres pages
+// Sauvegarde en session
 $_SESSION['id_livreur'] = $id_livreur;
 
-// ── Données du livreur ────────────────────────────────────
+// =============================================
+// DONNÉES DU LIVREUR
+// =============================================
 $stmt = $pdo->prepare("SELECT * FROM livreur WHERE id_livreur = ?");
 $stmt->execute([$id_livreur]);
 $livreur = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$livreur) die('<p style="color:#f87171;font-family:sans-serif;padding:40px;">Livreur introuvable.</p>');
 
-// ── Statistiques ──────────────────────────────────────────
+if (!$livreur) {
+    die('<p style="color:#f87171;font-family:sans-serif;padding:40px;">Livreur introuvable.</p>');
+}
+
+// =============================================
+// STATISTIQUES
+// =============================================
 $stats = $pdo->prepare("
     SELECT
         COUNT(*) AS total,
-        SUM(statut='en_attente')  AS en_attente,
-        SUM(statut='en_cours')    AS en_cours,
-        SUM(statut='terminee')    AS terminees,
-        SUM(statut='annulee')     AS annulees,
-        COALESCE(SUM(CASE WHEN statut='terminee' THEN prix END), 0) AS gains
-    FROM livraison WHERE id_livreur = ?
+        SUM(CASE WHEN statut='en_attente' THEN 1 ELSE 0 END) AS en_attente,
+        SUM(CASE WHEN statut='en_cours'   THEN 1 ELSE 0 END) AS en_cours,
+        SUM(CASE WHEN statut='terminee'   THEN 1 ELSE 0 END) AS terminees,
+        SUM(CASE WHEN statut='annulee'    THEN 1 ELSE 0 END) AS annulees,
+        COALESCE(SUM(CASE WHEN statut='terminee' THEN prix ELSE 0 END), 0) AS gains
+    FROM livraison 
+    WHERE id_livreur = ?
 ");
 $stats->execute([$id_livreur]);
 $s = $stats->fetch(PDO::FETCH_ASSOC);
 
-// ── 5 dernières livraisons ────────────────────────────────
+// =============================================
+// 5 DERNIÈRES LIVRAISONS
+// =============================================
 $recents = $pdo->prepare("
     SELECT l.*, u.nom_utilisateur
     FROM livraison l
     LEFT JOIN utilisateur u ON l.id_user = u.id_user
     WHERE l.id_livreur = ?
-    ORDER BY l.date_creation DESC LIMIT 5
+    ORDER BY l.date_creation DESC 
+    LIMIT 5
 ");
 $recents->execute([$id_livreur]);
 $dernières = $recents->fetchAll(PDO::FETCH_ASSOC);
 
-// ── Note moyenne ──────────────────────────────────────────
+// =============================================
+// NOTE MOYENNE
+// =============================================
 $noteStmt = $pdo->prepare("SELECT AVG(note) AS moy, COUNT(*) AS nb FROM note WHERE id_livreur = ?");
 $noteStmt->execute([$id_livreur]);
 $noteData = $noteStmt->fetch(PDO::FETCH_ASSOC);
 $moyenne  = $noteData['moy'] ? round($noteData['moy'], 1) : null;
 
-// ── Helpers ───────────────────────────────────────────────
-function statutLabel(string $s): string {
-    return match($s) {
-        'en_attente' => 'En attente', 'acceptee' => 'Acceptée',
-        'en_cours'   => 'En cours',   'terminee' => 'Terminée',
-        'annulee'    => 'Annulée',    default    => ucfirst($s),
-    };
-}
-function statutClass(string $s): string {
-    return match($s) {
-        'en_attente' => 'status-warning', 'acceptee'  => 'status-info',
-        'en_cours'   => 'status-primary', 'terminee'  => 'status-success',
-        'annulee'    => 'status-danger',  default     => '',
-    };
-}
 $initiales = strtoupper(mb_substr($livreur['prenom'], 0, 1) . mb_substr($livreur['nom'], 0, 1));
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
